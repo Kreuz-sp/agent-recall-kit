@@ -30,7 +30,7 @@
 - **全库总览**：一次取回整张图（当前演示库约 50 节点，作者自用库约 2800 节点），可缩放、平移、搜索定位、按类型筛选。
 - **候选审核**：机器只提"可能同主题"的候选，必须人看两端原文再接受/拒绝；接受与否决都记在快照里，重启不丢。
 - **只读来源**：`source-readonly` 模式下程序不写你的资料目录；人工决定写在数据目录的图快照里。
-- **可选的 MCP 桥**：给支持 MCP 的宿主（如 Claude Desktop、Codex、DSH）提供查询/取原文工具；默认不启用"每轮自动供给"。
+- **可选的 MCP 桥**：给支持 MCP 的宿主（如 Claude Desktop、Codex、DSH、Cherry Studio）提供查询/取原文工具；默认不启用"每轮自动供给"。
 
 ## 截图（来自本仓库的虚构演示库）
 
@@ -91,6 +91,7 @@ agent-recall-kit-doctor --config .\my-data\agent-recall-kit.json
 | 最低版本 | `requires-python = ">=3.12"`；3.10/3.11 **未验证**，不承诺可用 |
 | 浏览器 | Microsoft Edge 156（headless 实跑：加载、缩放、拖拽、搜索、候选对照） |
 | 安装 | 全新 venv + 安装 wheel，数据目录在 `%TEMP%` 下，与作者环境无引用 |
+| MCP 宿主 | **Cherry Studio（Grok）实测**：MCP 直连本服务，`memory_query` / `memory_fetch` 走通（含按版本取原文）；只读，不自动注入上下文 |
 | 规模 | 演示库 54 节点；合成大图约 2600 节点（`examples/generate_synthetic.py`） |
 | 未验 | Linux/macOS 安装、非 Edge 浏览器、多进程同时写同一数据目录 |
 
