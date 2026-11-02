@@ -1,4 +1,4 @@
-"""HTTP / MCP 层的活跃度接口：反馈、保护、校验与 MCP 工具入参。"""
+﻿"""HTTP / MCP 层的活跃度接口：反馈、保护、校验与 MCP 工具入参。"""
 import json
 import subprocess
 import sys
@@ -97,5 +97,42 @@ def test_mcp_rejects_bad_feedback_args(workspace):
         assert "result must be one of" in first["error"]["message"]
         assert second["error"]["code"] == -32602
         assert "missing required" in second["error"]["message"]
+    finally:
+        srv.close()
+
+def test_feedback_event_id_conflict_over_http(workspace):
+    """真实 HTTP：同 event_id 不同载荷必须 409，不能返回“成功”或拼两条记录。"""
+    srv = Server(workspace["config"], free_port())
+    try:
+        srv.request("/v1/refresh", {})
+        status, view = srv.request("/v1/graph/view", {"mode": "overview"})
+        units = [n for n in view["nodes"] if n["id"].startswith("unit:")][:2]
+        assert len(units) == 2
+        a, b = units
+
+        def payload(unit, result="helpful", event="http-shared-event"):
+            return {"unit_id": unit["id"], "expected_source_version": unit["source_version"],
+                    "event_id": event, "result": result,
+                    "expected_revision": srv.request("/v1/health")[1]["revision"]}
+
+        status, first = srv.request("/v1/feedback", payload(a))
+        assert status == 200 and first["effective"] is True
+        revision_after = srv.request("/v1/health")[1]["revision"]
+
+        status, replay = srv.request("/v1/feedback", payload(a))
+        assert status == 200 and replay["deduplicated"] is True
+        assert srv.request("/v1/health")[1]["revision"] == revision_after   # 重放不推进
+
+        status, cross = srv.request("/v1/feedback", payload(b))
+        assert status == 409 and cross["error"]["code"] == "idempotency_conflict", cross
+
+        status, flipped = srv.request("/v1/feedback", payload(a, result="not_helpful"))
+        assert status == 409 and flipped["error"]["code"] == "idempotency_conflict", flipped
+
+        # 失败不改 metadata/revision，也不把 B 的状态混进来
+        assert srv.request("/v1/health")[1]["revision"] == revision_after
+        status, detail_b = srv.request("/v1/fetch", {"unit_id": b["id"],
+                                                     "expected_source_version": b["source_version"]})
+        assert status == 200 and detail_b["activation"]["last_helpful_at"] is None
     finally:
         srv.close()

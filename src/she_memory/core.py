@@ -1,4 +1,4 @@
-﻿import collections
+import collections
 import math
 import re
 import uuid
@@ -20,6 +20,14 @@ def file_digest(path):
     """原件当前版本的 sha256，用来在返回前核对快照是否已过期。"""
     import hashlib
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+class _ReplayEvent(Exception):
+    """同 event_id、同语义载荷的重放：在写锁内识别，直接返回原结果，不发布新 revision。"""
+
+    def __init__(self, payload):
+        self.payload = payload
+        super().__init__('replayed feedback event')
 
 
 class Brain:
@@ -320,8 +328,10 @@ class Brain:
                  expected_revision, key=None):
         """明确的使用反馈：只有 helpful 才更新活跃时间；不保存问句/聊天/模型正文。
 
-        - event_id 幂等：同一事件重放返回原结果，不推进 revision；
-        - 同一单元同一 UTC 日最多有效强化一次；
+        - event_id 绑定完整语义载荷（unit_id + source_version + result）：
+          完全相同才视为重放（返回原结果、不写、不推进 revision）；同 ID 不同载荷 → idempotency_conflict；
+        - 唯一事件检查在写锁内的 change() 里做，和“同单元同 UTC 日最多一次有效强化”是两件事；
+        - 旧元数据没有语义指纹时保守拒绝，不猜成同一事件；
         - 不接受调用方传时间（用服务端时钟），因此不可能写入未来激活时间。
         """
         if result not in ('helpful', 'not_helpful'):
@@ -343,20 +353,47 @@ class Brain:
         if current != unit['source_version']:
             raise MemoryErrorCode('source_changed', 'source changed on disk; refresh required')
 
-        activation = ensure_state(data)
-        prior = activation['feedback'].get(event_id)
         now = self.now()
+        stamp = now.isoformat().replace('+00:00', 'Z')
+        day = now.date().isoformat()
+        fingerprint = {'unit_id': unit_id, 'source_version': expected_source_version, 'result': result}
+
+        # 只读快路径：已存在同一事件的完整重放，直接返回原结果（不写、不推进 revision）。
+        # 这里用快照做一次核对；真正的唯一性判定仍在 change() 的写锁内再做一遍，防并发穿透。
+        prior = ensure_state(data)['feedback'].get(event_id)
         if prior is not None:
-            summary = resolve(unit, activation['units'].get(unit_id), now, self.activation_policy)
+            stored = {key: prior.get(key) for key in ('unit_id', 'source_version', 'result')}
+            if not all(stored.values()):
+                raise MemoryErrorCode('idempotency_conflict',
+                                      'event_id exists without semantic fingerprint; refusing to reuse it')
+            if stored != fingerprint:
+                raise MemoryErrorCode('idempotency_conflict',
+                                      'event_id already used with a different unit/version/result')
+            entry = ensure_state(data)['units'].get(unit_id)
+            summary = resolve(unit, entry, now, self.activation_policy)
             return {'unit_id': unit_id, 'result': prior.get('result'),
                     'effective': bool(prior.get('effective')), 'deduplicated': True,
                     'weight': summary['weight'],
-                    'last_helpful_at': (activation['units'].get(unit_id) or {}).get('last_helpful_at')}
-        stamp = now.isoformat().replace('+00:00', 'Z')
-        day = now.date().isoformat()
+                    'last_helpful_at': (entry or {}).get('last_helpful_at')}
 
         def change(state):
             state_activation = ensure_state(state)
+            prior = state_activation['feedback'].get(event_id)
+            if prior is not None:
+                stored = {key: prior.get(key) for key in ('unit_id', 'source_version', 'result')}
+                if not all(stored.values()):
+                    # 旧版本写的记录没有语义指纹：不默认认定是同一事件
+                    raise MemoryErrorCode('idempotency_conflict',
+                                          'event_id exists without semantic fingerprint; refusing to reuse it')
+                if stored != fingerprint:
+                    raise MemoryErrorCode('idempotency_conflict',
+                                          'event_id already used with a different unit/version/result')
+                entry = state_activation['units'].get(unit_id)
+                summary = resolve(unit, entry, now, self.activation_policy)
+                raise _ReplayEvent({'unit_id': unit_id, 'result': prior.get('result'),
+                                    'effective': bool(prior.get('effective')),
+                                    'deduplicated': True, 'weight': summary['weight'],
+                                    'last_helpful_at': (entry or {}).get('last_helpful_at')})
             entry = state_activation['units'].setdefault(unit_id, {
                 'first_seen_at': stamp, 'source_version': unit['source_version'], 'pin': False,
                 'last_helpful_at': None, 'last_helpful_day': None, 'feedback_count': 0})
@@ -367,7 +404,8 @@ class Brain:
                 entry['feedback_count'] = int(entry.get('feedback_count') or 0) + 1
                 effective = True
             state_activation['feedback'][event_id] = {
-                'unit_id': unit_id, 'result': result, 'at': stamp, 'effective': effective}
+                'unit_id': unit_id, 'source_version': expected_source_version,
+                'result': result, 'at': stamp, 'effective': effective}
             summary = resolve(unit, entry, now, self.activation_policy)
             return {'unit_id': unit_id, 'result': result, 'effective': effective,
                     'deduplicated': False, 'weight': summary['weight'],
@@ -375,7 +413,13 @@ class Brain:
                     'feedback_count': entry.get('feedback_count', 0)}
 
         signature = 'feedback:' + unit_id + ':' + event_id + ':' + result
-        return self.store.mutate(expected_revision, key or event_id, signature, change)
+        # 事件幂等由 change() 在写锁内判定；store 层的 key 只做传输级去重，
+        # 不能拿 event_id 当 key（否则 store 会抢在语义核对之前返回旧结果）。
+        transport_key = (key + ':' + digest(fingerprint)) if key else uuid.uuid4().hex
+        try:
+            return self.store.mutate(expected_revision, transport_key, signature, change)
+        except _ReplayEvent as replay:
+            return replay.payload
 
     def query(self, text, max_items=3, context=None):
         # context: {"focus_terms": [...]} —— 上一层传下来的会话焦点（可为空）

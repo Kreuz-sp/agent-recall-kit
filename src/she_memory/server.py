@@ -94,7 +94,7 @@ def make_server(brain, port=18767):
                 result = brain.feedback(body.get('unit_id'), body.get('expected_source_version'),
                                         body.get('event_id'), body.get('result'),
                                         body.get('expected_revision'),
-                                        body.get('idempotency_key') or body.get('event_id'))
+                                        body.get('idempotency_key'))
             elif self.command == 'POST' and path == '/v1/graph/view':
                 result = brain.graph_view(body.get('focus'), body.get('limit', 120), body.get('mode'))
             elif self.command == 'POST' and path == '/v1/candidates/detail':

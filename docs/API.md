@@ -73,7 +73,8 @@ ot_helpful |
 /v1/feedback 的行为契约：
 
 - 先核当前原件版本（expected_source_version 与磁盘哈希都要对上），否则 409 source_changed；
-- event_id 幂等：同一事件重放返回原结果（deduplicated=true），**不推进 revision**；
+- event_id 绑定完整语义载荷 (unit_id, source_version, result)：**完全相同**才算重放，返回原结果（deduplicated=true）且**不推进 revision**；
+  同 ID 不同载荷 → 409 idempotency_conflict（不会把两条记录的字段拼在一起）；旧元数据没有语义指纹时同样保守拒绝；
 - 同一单元同一 UTC 日最多有效强化一次；同日第二次 helpful 返回 effective=false；
 - 
 ot_helpful 只记录，不降权；

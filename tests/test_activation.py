@@ -320,3 +320,66 @@ def test_writes_never_touch_source_files(decay_ws):
     after = hashlib.sha256(path.read_bytes()).hexdigest()
     assert before == after, "pin/feedback 不许改原件"
     assert path.read_text(encoding="utf-8").startswith("# 2025-09-01")
+# ── 回归：event_id 绑定完整语义载荷（集中验收阻断项）──────────
+def test_feedback_event_binds_unit_version_and_result(decay_ws):
+    b, lib = decay_ws
+    a = unit_of(b, "低温卡涩的结论")
+    c = unit_of(b, "例会随手记")
+    revision = b.store.read()["revision"]
+
+    first = b.feedback(a["id"], a["source_version"], "evt-shared", "helpful", revision)
+    assert first["effective"] is True
+    after_first = b.store.read()["revision"]
+
+    # ① 完全相同载荷重放：返回原结果、不写、不推进 revision
+    replay = b.feedback(a["id"], a["source_version"], "evt-shared", "helpful", after_first)
+    assert replay["deduplicated"] is True and replay["effective"] is True
+    assert replay["unit_id"] == a["id"] and replay["result"] == "helpful"
+    assert b.store.read()["revision"] == after_first
+
+    # ② 跨单元复用同一个 event_id → 冲突，不能拼两条记录
+    with pytest.raises(Exception) as exc:
+        b.feedback(c["id"], c["source_version"], "evt-shared", "helpful", after_first)
+    assert getattr(exc.value, "code", "") == "idempotency_conflict"
+    assert b.store.read()["revision"] == after_first
+
+    # ③ 同单元、同 event_id、不同 result → 冲突
+    with pytest.raises(Exception) as exc:
+        b.feedback(a["id"], a["source_version"], "evt-shared", "not_helpful", after_first)
+    assert getattr(exc.value, "code", "") == "idempotency_conflict"
+    assert b.store.read()["revision"] == after_first
+
+    # ④ 来源换版本后复用旧 event_id：旧版本 → source_changed；新版本 → 载荷冲突（不当作旧反馈成功）
+    unit_a = next(u for u in b.store.read()["units"] if u["id"] == a["id"])
+    path = lib / unit_a["path"]
+    path.write_text(path.read_text(encoding="utf-8") + "\n新版本。\n", encoding="utf-8")
+    b.refresh()
+    fresh = unit_of(b, "低温卡涩的结论")
+    assert fresh["source_version"] != a["source_version"]
+    revision_now = b.store.read()["revision"]
+    with pytest.raises(Exception) as exc:
+        b.feedback(fresh["id"], a["source_version"], "evt-shared", "helpful", revision_now)
+    assert getattr(exc.value, "code", "") == "source_changed"
+    with pytest.raises(Exception) as exc:
+        b.feedback(fresh["id"], fresh["source_version"], "evt-shared", "helpful", revision_now)
+    assert getattr(exc.value, "code", "") == "idempotency_conflict"
+    assert b.store.read()["revision"] == revision_now
+
+
+def test_feedback_legacy_event_without_fingerprint_is_rejected(decay_ws):
+    b, _lib = decay_ws
+    a = unit_of(b, "低温卡涩的结论")
+    revision = b.store.read()["revision"]
+
+    def inject(state):
+        activation = ensure_state(state)
+        activation["feedback"]["evt-legacy"] = {
+            "result": "helpful", "effective": True, "at": "2026-01-01T00:00:00Z"}
+        return {"ok": True}
+
+    b.store.mutate(revision, "inject-legacy", "test:inject-legacy", inject)
+    revision_now = b.store.read()["revision"]
+    with pytest.raises(Exception) as exc:
+        b.feedback(a["id"], a["source_version"], "evt-legacy", "helpful", revision_now)
+    assert getattr(exc.value, "code", "") == "idempotency_conflict"
+    assert b.store.read()["revision"] == revision_now
