@@ -99,8 +99,9 @@ agent-recall-kit-doctor --config .\my-data\agent-recall-kit.json
 
 ```
 src/she_memory/       核心（阅读器、图、查询、HTTP 服务）与随包前端 web/
+                      ⚠️ Python 导入名仍是 she_memory，未随品牌改名（0.1 保持兼容）
 examples/demo-library/ 纯虚构演示资料
-examples/config/       可直接使用的示例配置与演示 profile
+examples/config/       可直接使用的示例配置（agent-recall-kit.json）与演示 profile
 adapters/              MCP 接入配置、可选 Windows 守护任务
 tests/                 隔离测试（临时目录、临时端口）
 docs/                  格式、profile、接口、运维、限制
