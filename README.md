@@ -1,162 +1,227 @@
 # Agent Recall Kit
 
-> **不止于记录，更在于回忆。**
+**简体中文** | [English](README.en.md)
 
-本地、可追溯的 Agent 记忆工具包 · 0.1.0 预览版
+### 不止于记录，更在于回忆。
 
-本地、可追溯的记忆服务预览版：把你的 Markdown/YAML 资料读成一张**带来源**的图，
-在浏览器里全库浏览、按关系检索、逐条审核自动生成的关系候选；
-程序只读你的原件，人工决定单独存放，可导出备份。
+*Beyond storing memories—recalling them when they matter.*
 
-> **状态**：预览版（0.1.0），接口与数据格式仍可能变化。
-> 许可证 MIT，署名见 `LICENSE` 与 `pyproject.toml`。
-
-**它不做什么**：不自带任何人格或聊天助手；不声称"任意问法都能准确召回"；
-不把可编辑关系图说成神经网络或意识；不改写你的记忆原件。
+[快速开始](#快速开始) · [接入 Agent](#接入-agent) · [文档](#文档) · [MIT License](LICENSE)
 
 ---
 
+## What is Memory?
 
-## 从一点联系，到一张记忆网络
+什么是「记忆」？
 
-[![观看 20 秒记忆生长演示](docs/media/recall-growth-poster.jpg)](docs/media/recall-growth.mp4)
+在中文中，我认为「记忆」可以理解为两个部分：**记 + 忆**。
 
-[观看 / 下载演示视频（20 秒 · 1080p · 无声）](docs/media/recall-growth.mp4)
+记，是记录和保存经历；忆，是在需要的时候重新找回经历。
 
-白底、黑点、细线，从稀疏联系逐渐长成复杂网络。**不展示节点标识、标题或记忆正文**，仅呈现约 2800 个节点、4800 条关系的规模与形态；生长顺序为示意编排，并非历史录像。下方截图则来自本仓库的虚构演示库，两者来源不同。
+我的上一个项目 [Agent Memory Kit](https://github.com/Kreuz-sp/agent-memory-kit) 分享了一套面向 Agent 的记忆库架构，主要解决了「记」的问题：让 Agent 能够记录、组织和保存自己的经历。
 
+**但记下来，不代表能够想起来。**
 
-## 它解决什么
+随着记忆不断积累，如何在需要的时候重新找到它们？如何发现不同记忆之间的联系？又如何让过去的经历在新的交互中重新发挥作用？
 
-- **来源可追溯**：每个节点要么是来源单元（带 `path:line` 与 `source_version`），要么是文档/对象/关系组；检索结果能点回原文并按版本校验。
-- **全库总览**：一次取回整张图（当前演示库约 50 节点，作者自用库约 2800 节点），可缩放、平移、搜索定位、按类型筛选。
-- **候选审核**：机器只提"可能同主题"的候选，必须人看两端原文再接受/拒绝；接受与否决都记在快照里，重启不丢。
-- **只读来源**：`source-readonly` 模式下程序不写你的资料目录；人工决定写在数据目录的图快照里。
-- **可选的 MCP 桥**：给支持 MCP 的宿主（如 Claude Desktop、Codex、DSH、Cherry Studio）提供查询/取原文工具；默认不启用"每轮自动供给"。
+这就是 Agent Recall Kit 想要探索的「忆」。
 
-## 截图（来自本仓库的虚构演示库）
+## What is Agent Recall Kit?
 
-| 文件 | 内容 |
+Agent Recall Kit 是一套面向个人 Agent、可独立运行的本地记忆工具包，提供记忆关联、检索与可视化管理能力。
+
+它延续了 Agent Memory Kit 的记忆库设计思路，在 Markdown / YAML 原件之上建立关系图谱，帮助 Agent 找回相关经历、核对来源，并将过去的经验用于当前任务。
+
+项目自带 MCP 接口，设计上不绑定特定的 LLM 或 Agent。支持 MCP 的宿主可以接入同一份本地记忆服务。
+
+目前已在 **DSH、Codex 和 Cherry Studio** 中验证 MCP 接入与记忆读取。不同版本、宿主和模型的具体支持仍需按配置验证；接通工具也不等于每轮自动调用。
+
+## Why Another Memory System?
+
+在我设想的个人 Agent 中，认知与记忆应该是两个相对独立的部分：
+
+- **Cognitive Brain（认知大脑）**：由 LLM 提供，负责理解、推理、规划与表达。
+- **Memory Brain（记忆大脑）**：负责经历的保存、组织、关联与检索。
+
+认知模型可以更换，会话可以结束，但积累下来的记忆应该能够继续承接。
+
+我们可以更换一个 Agent 的思考方式，却不必因此重新开始认识它。
+
+Agent Recall Kit 正是基于这样的想法而诞生的。
+
+## A Personal Project, An Open Exploration
+
+这个项目最初源于我对个人陪伴型 Agent 的探索。
+
+我希望分享的不只是一个可以使用的工具，也是一种关于 Agent 长期记忆的设计思路。
+
+目前的实现还有许多值得探索和改进的地方。至于它最终能够发展成什么样，我希望交给更多开发者共同探索。
+
+欢迎试用、交流、提出问题，也欢迎分享你的见解。
+
+**让 Agent 不止能够记下经历，也能够重新忆起经历。**
+
+---
+
+## 看记忆如何长出联系
+
+[![点击观看记忆网络的生长演示](docs/media/recall-growth-poster.jpg)](docs/media/recall-growth.mp4)
+
+[观看 20 秒视频](docs/media/recall-growth.mp4) · 无声 · 1080p
+
+视频展示作者实际图谱的规模与形态，约 2800 个节点、4800 条关系，不展示节点标识、标题或记忆正文。生长顺序是示意编排，并非历史录像。下方界面截图均来自仓库内的虚构演示库。
+
+## 它能帮 Agent 记住什么
+
+项目里的决定、某次操作为什么失败、已经验证过的方法、仍未办完的事——这些资料不必散落在不同聊天窗口里。
+
+例如，在自带的演示库中：
+
+| 你问 | 程序提供 |
 |---|---|
-| `docs/images/overview.png` | 全库总览（适应画布） |
-| `docs/images/local.png` | 主题局部（标注"显示 X/Y"） |
-| `docs/images/candidate.png` | 候选审核：A/B 两端原文对照 |
-| `docs/images/missing-source.png` | 一端来源缺失：接受被禁用，B 端仍可读 |
+| 滴灌阀型号是什么？ | 对应的事实记录与来源位置 |
+| 控制器固件版本是多少？ | 配置记录中的版本信息 |
+| 低温卡涩的结论是什么？ | 相关经历与结论的原文 |
 
-演示库是**纯虚构**的（人物、项目、设备、日期都是编的），见 `examples/demo-library/`。
+程序返回资料和证据，由接入的模型理解并回答。结果不足或存在多个候选时，也会保留缺项与歧义。
 
-## 五分钟快速开始（Windows，实测 Py3.12/3.13）
+### 找回过去，并知道它从哪里来
+
+每条来源单元保留文件、定位和版本。需要核对时，可以取回完整原文；文件发生变化后，旧版本读取会被拒绝，避免把缓存当成当前记录。
+
+### 看见记忆之间的关系
+
+全库图谱支持缩放、搜索、拖动、保存布局及关系编辑。程序会提出可能相关的记忆，由你对照两端原文后接受或拒绝；人工判断会持久保存。
+
+![全库图谱与来源详情](docs/images/overview.png)
+
+<details>
+<summary>查看关系候选审核</summary>
+
+![对照两条记忆的原文，审核关联建议](docs/images/candidate.png)
+
+共同词只是关联线索，不代表两条记录说的是同一事件。
+
+</details>
+
+### 让普通经历慢慢沉下去，需要时仍能找回
+
+普通经历会随时间降低召回优先级，原文仍然保留。重要事实、知识、经验、待办和承诺默认受保护，也可以手动保护某条经历。
+
+明确查旧事会绕过衰减。真正用上某条记忆后，可以反馈“有帮助”使它重新活跃；仅仅查到、读过或点击，不会自动强化。
+
+<details>
+<summary>淡忘如何影响排序？</summary>
+
+默认权重为：
+
+```text
+w(t) = 0.35 + 0.65 × 2^(−t/90)
+```
+
+`t` 是距离记忆时间或最近一次有效强化的天数。高于保底值的部分每 90 天减半，权重最低保留 0.35。演示 profile 使用 60 天，便于观察效果；这些参数可以配置。
+
+先按基础相关度相对本次最高分分层：强相关 ≥90%，相关 ≥60% 且 <90%，弱相关 <60%。跨层保持顺序，层内按“基础相关度 × 活跃权重”排序；同层中较新的记录可能超过分数稍高的旧记录。年龄本身不消解歧义，也不把有资格返回的记录过滤掉。
+
+时间依据依次是显式元数据、条目文件名/标题中的日期、首次入库时间，不使用文件修改时间。明确历史查询、单元定位或完整引文命中会绕过衰减，但不更新强化时间。
+
+保护期间权重为 1，取消保护后回到原时间轨迹。只有有效的 `helpful` 反馈会重新激活，同一单元同一 UTC 日最多一次；`not_helpful` 只记录反馈、不降权。反馈事件绑定单元、来源版本和结果，重复事件不重复写入，不同内容复用事件 ID 会报冲突。
+
+![查看记忆的活跃程度与时间依据](docs/images/activation-detail.png)
+
+</details>
+
+## 快速开始
+
+当前版本为 **0.1.0 预览版**。已验证 Windows 11、Python 3.12/3.13 和 Edge；Linux/macOS 尚未验证。
+
+在 PowerShell 中运行：
 
 ```powershell
-# 1) 装（在仓库根目录运行）
+git clone https://github.com/Kreuz-sp/agent-recall-kit.git
+cd agent-recall-kit
+
 python -m venv .venv
-.venv\Scripts\activate
-python -m pip install .
-# 也可以先打包再装 wheel：python -m pip install build; python -m build; pip install dist\agent_recall_kit-0.1.0-py3-none-any.whl
+.venv\Scripts\python.exe -m pip install .
 
-# 2) 建数据目录，直接带虚构演示库（配置、图状态、连接码都放这里，不写源码树）
-agent-recall-kit init .\my-data --demo
-# 生成的结构：
-#   my-data\agent-recall-kit.json     ← 配置（memory_root/profile/state_root/view_root 都在这里）
-#   my-data\library\            ← 资料目录（演示库写在这里）
-#   my-data\data\graph\         ← 图快照（state_root）
-#   my-data\data\runtime\       ← 连接码、布局、日志（view_root）
+# 创建一份自带虚构资料的数据目录
+.venv\Scripts\agent-recall-kit.exe init .\my-data --demo
 
-# 3) 建图（唯一写图的入口）
-agent-recall-kit --config .\my-data\agent-recall-kit.json build
-# {"revision": 1, "units": 39, "nodes": 54, "edges": 75}
+# 从资料建立图谱
+.venv\Scripts\agent-recall-kit.exe --config .\my-data\agent-recall-kit.json build
 
-# 4) 启动（只监听 127.0.0.1；首次启动生成连接码）
-agent-recall-kit --config .\my-data\agent-recall-kit.json serve --port 18791
-
-# 5) 浏览器打开 http://127.0.0.1:18791
-#    连接码在 .\my-data\data\runtime\access-token.txt
+# 启动本地服务
+.venv\Scripts\agent-recall-kit.exe --config .\my-data\agent-recall-kit.json serve --port 18791
 ```
 
-用自己的资料时，跳过 `--demo`：`agent-recall-kit init .\my-data` 会建空库骨架，
-再把你的 Markdown/YAML 放进 `my-data\library\`，然后跑 `build`。
+打开 **http://127.0.0.1:18791**，将以下文件中的连接码填入页面：
 
-命令行也能用：
-
-```powershell
-agent-recall-kit --config .\my-data\agent-recall-kit.json query "滴灌阀 型号"
-agent-recall-kit --config .\my-data\agent-recall-kit.json fetch --unit unit:... --version <sha256>
-agent-recall-kit-ctl --config .\my-data\agent-recall-kit.json status
-agent-recall-kit-doctor --config .\my-data\agent-recall-kit.json
+```text
+my-data/data/runtime/access-token.txt
 ```
 
-## 淡忘与再激活（本版新增）
+服务运行期间保持终端开启，按 `Ctrl+C` 停止。需要后台启停或 Windows 守护任务时，见[运维说明](docs/OPS.md)。
 
-普通经历（`kind=entry`）会随时间慢慢沉到检索后面；**原文、节点、边、证据都不会消失**，明确查历史仍然找得到。
-重要事实、约定、待办、知识/经验默认受保护；也可以对单条记录 **pin**。
+数据与安装目录分开存放：
 
-- **权重**：`w(t) = 0.35 + 0.65 · 2^(−t/90)`——`t` 是距离「记忆时间」或「最近一次有效强化」的天数。
-  90 天是「高于保底那部分权重」的半衰期，权重最低保留 `0.35`。首版默认 `half_life=90 天`、`floor=0.35`；
-  演示 profile 为了让效果可见用 **60 天**。这是产品初始值，不是认知科学结论，可在 profile 的 `activation` 里改。
-- **时间依据**：显式元数据 → 文件名/标题里解析器认可的日期 → 首次入库时间；返回里带 `time_basis`，
-  **不拿文件 mtime 冒充经历时间**，复制/迁库/刷新/改正文都不重置年龄。
-- **排序分三层，是相对分档**：先算基础相关度，再按**本次最高分**切——强相关 ≥ 90%、相关 60%~90%、弱相关 < 60%。
-  **跨层保持次序，层内按「基础相关度 × 活跃权重」排序**。所以旧记录不会被较低层的新记录越过，
-  但**同一层里稍低分的新记录可能超过它**。年龄不会单独消除歧义，也不会让记录变成 `no_match`。
-- **明确查旧事绕过衰减，但不强化**：历史问法、明确 unit 定位、完整引文命中时权重按 1 参与排序，
-  但不更新 `last_helpful_at`——没有「有帮助」反馈，它仍沿原来的时间轨迹衰减。
-- **pin 期间权重为 1**；解除保护回到原时间轨迹，**不从取消当天重新计时**。
-- `ambiguous` / 冲突不按年龄消解；「旧」「新」不证明是同一件事。
-- 只有明确反馈 **helpful** 才重新活跃（`event_id` 幂等、同单元同 UTC 日最多一次）；`not_helpful` 只记账、不惩罚。
-  query / fetch / 预览 / 点击节点都不会自动强化。
-- 默认只有 `entry` 参与衰减；`fact / knowledge / experience / 待办行 / 小节 / 文档 / 关系组` 默认受保护。
-- 管理界面有「活跃程度」开关（只调透明度，最低 0.45，低活跃节点仍可点开读原文）、保护/取消保护、
-  有帮助/没帮助按钮；详情里显示权重、时间依据、最近有用反馈。
-
-```powershell
-agent-recall-kit --config .\my-data\agent-recall-kit.json feedback `
-  --unit <unit_id> --version <source_version> --event evt-001 --result helpful
-agent-recall-kit --config .\my-data\agent-recall-kit.json pin --unit <unit_id>
-agent-recall-kit --config .\my-data\agent-recall-kit.json unpin --unit <unit_id>
+```text
+my-data/
+  agent-recall-kit.json   配置
+  library/               Markdown / YAML 原件
+  data/graph/            图谱、人工判断和激活状态
+  data/runtime/          连接码、布局和运行状态
 ```
 
-## 已验证环境
+要使用自己的资料，去掉 `--demo` 创建空库，按[数据格式](docs/FORMAT.md)整理文件，并配置适合自己领域的 [profile](docs/PROFILE.md)。修改资料后重新运行 `build`，或在页面点击“重新读取来源”。
 
-| 项 | 实测 |
+## 接入 Agent
+
+记忆服务在本地运行，MCP stdio 桥把它提供给宿主。多个宿主可以共用同一服务。
+
+```text
+Agent / MCP 宿主 → stdio 桥 → 本地记忆服务 → 资料库与关系图
+                                  ↑
+                              浏览器管理界面
+```
+
+在宿主的 MCP 设置中填写命令与参数，使用你自己的绝对路径：
+
+```text
+命令：<仓库路径>/.venv/Scripts/agent-recall-kit-mcp.exe
+参数：--config <数据目录>/agent-recall-kit.json --service http://127.0.0.1:18791
+```
+
+| 工具 | 用途 |
 |---|---|
-| 平台 | Windows 11（本机）；Python **3.12.10** 与 **3.13.15** 各自全新 venv 装 wheel 跑通 |
-| 最低版本 | `requires-python = ">=3.12"`；3.10/3.11 **未验证**，不承诺可用 |
-| 浏览器 | Microsoft Edge 156（headless 实跑：加载、缩放、拖拽、搜索、候选对照） |
-| 安装 | 全新 venv + 安装 wheel，数据目录在 `%TEMP%` 下，与作者环境无引用 |
-| MCP 宿主 | **Cherry Studio（Grok）实测**：MCP 直连本服务，`memory_query` / `memory_fetch` 走通（含按版本取原文）；只读，不自动注入上下文 |
-| 规模 | 演示库 54 节点；合成大图约 2600 节点（`examples/generate_synthetic.py`） |
-| 未验 | Linux/macOS 安装、非 Edge 浏览器、多进程同时写同一数据目录 |
+| `memory_query` | 查找相关记忆、来源和关系路径 |
+| `memory_fetch` | 按单元 ID 与版本读取原文 |
+| `memory_explain` | 查看检索依据 |
+| `memory_health` | 检查连接和服务状态 |
+| `memory_feedback` | 明确反馈某条记忆是否有帮助，写入激活元数据 |
 
-## 目录结构
+完整 JSON 配置见 [MCP 接入说明](adapters/mcp/README.md)。接入与读取已在 DSH、Codex、Cherry Studio 中验证，具体宿主版本和模型需按配置确认。接通 MCP 后由模型或宿主决定何时调用；本版本不附带每轮自动供给。
 
-```
-src/she_memory/       核心（阅读器、图、查询、HTTP 服务）与随包前端 web/
-                      ⚠️ Python 导入名仍是 she_memory，未随品牌改名（0.1 保持兼容）
-examples/demo-library/ 纯虚构演示资料
-examples/config/       可直接使用的示例配置（agent-recall-kit.json）与演示 profile
-adapters/              MCP 接入配置、可选 Windows 守护任务
-tests/                 隔离测试（临时目录、临时端口）
-docs/                  格式、profile、接口、运维、限制
-```
+## 数据由你保管
+
+- 来源目录只读，图谱、布局、反馈等状态另存。普通经历的淡忘也不会删除原件。
+- 服务默认只监听本机，连接码在本机生成。需要迁移或留副本时，使用[备份与恢复](docs/OPS.md)。
+- 领域别名和证据规则需要自行配置；关系候选需要审核，检索仍可能遗漏或返回不相关资料。
+
+预览版接口和数据格式仍可能变化。同一数据目录多进程写入、其它操作系统和浏览器尚未完整验证，详细边界见[已知限制](docs/LIMITS.md)。
 
 ## 文档
 
-- 数据格式与单位身份：`docs/FORMAT.md`
-- 领域规则（对象/目标/证据规则）怎么写：`docs/PROFILE.md`
-- HTTP 接口与状态：`docs/API.md`
-- 启停、体检、备份与恢复、可选守护：`docs/OPS.md`
-- 已知限制（必读）：`docs/LIMITS.md`
+| 文档 | 内容 |
+|---|---|
+| [数据格式](docs/FORMAT.md) | 资料如何组织、来源单元与版本 |
+| [领域配置](docs/PROFILE.md) | 对象别名、目标字段、检索与证据规则 |
+| [HTTP API](docs/API.md) | 查询、图谱、反馈与错误码 |
+| [MCP 接入](adapters/mcp/README.md) | 命令、参数和工具说明 |
+| [运维](docs/OPS.md) | 启停、体检、备份、恢复与守护 |
+| [已知限制](docs/LIMITS.md) | 当前已验证范围与未实现部分 |
 
-## 安全与边界
+## 许可
 
-- 默认只监听 `127.0.0.1`，每次启动时若没有连接码就在数据目录生成一个（`access-token.txt`），不随包分发、不写入仓库。
-- 来源为**只读**：所有写操作只落在数据目录的图快照/布局文件里。
-- 端口独占只保证"同一端口只有一个服务"；**不代表**同一数据目录可以被多个进程同时写——这一点未验证，见 `docs/LIMITS.md`。
+[MIT](LICENSE) · Copyright © 2026 Kreuz-sp
 
-## 许可与出处
-
-MIT，见 `LICENSE`（Copyright © 2026 Kreuz-sp）。版本号以 `pyproject.toml` 为准，
-源码、包元数据、构建产物与本文保持一致（0.1.0，预览版）。
-
-首发范围保持精简：**不含**经验草稿工具（`experience`）、一次性迁移脚本，
-也**不含** DSH/Codex 的每轮自动供给——这些暂未纳入，不承诺时间。
+Python 内部导入名仍为 `she_memory`；安装包名与命令前缀为 `agent-recall-kit`。
