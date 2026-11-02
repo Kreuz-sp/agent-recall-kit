@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 // She 记忆图谱：全库总览 / 主题局部 / 候选审核
 // 约定：接口字段只读不改；所有数量来自同一次 /v1/graph/view 响应。
 
@@ -406,7 +406,11 @@ async function setPin(unit, pinned) {
     await loadGraph({keepView: true});
     notice(pinned ? '已保护：这条记录不再随时间衰减。' : '已取消保护：按它原来的时间轨迹计算，不伪造新生日。');
   } catch (error) {
-    notice(`未完成：${ERROR_TEXT[error.message] || error.message}` + (error.message === 'revision_conflict' ? '（请重新读取后再试）' : ''));
+    if (error.message === 'revision_conflict') {
+      notice('版本冲突：图已经被别的操作更新（当前页不是最新），请先重新读取，再重试保护。本次没有写入任何状态。');
+    } else {
+      notice(`保护未写入：${ERROR_TEXT[error.message] || error.message}`);
+    }
   }
 }
 
@@ -424,7 +428,11 @@ async function sendFeedback(unit, result) {
       ? (answer.effective ? '已记录「有帮助」：活跃度回升。' : '已记录「有帮助」（同一 UTC 日已强化过一次，本次不再累加）。')
       : '已记录「没帮助」：只记账，不降权。');
   } catch (error) {
-    notice(`反馈未写入：${ERROR_TEXT[error.message] || error.message}`);
+    if (error.message === 'revision_conflict') {
+      notice('版本冲突：图已经被别的操作更新，请先重新读取，再重试反馈。本次没有任何反馈被写入。');
+    } else {
+      notice(`反馈未写入：${ERROR_TEXT[error.message] || error.message}`);
+    }
   }
 }
 const UNIT_KIND_TEXT = {
@@ -850,3 +858,6 @@ $('canvas').addEventListener('pointerup', ev => {
 window.addEventListener('resize', () => applyView());
 ensureLabelPool();
 applyView();
+
+// 调试用只读句柄（不影响任何行为；验收脚本用它读取 revision/选中项）
+window.__she = S;

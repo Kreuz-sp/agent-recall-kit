@@ -1,4 +1,4 @@
-"""候选裁定、停用/恢复、布局隔离、单实例、备份。"""
+﻿"""候选裁定、停用/恢复、布局隔离、单实例、备份。"""
 import json
 import os
 import socket
@@ -118,3 +118,27 @@ def test_backup_verify_and_isolated_restore(workspace, tmp_path):
     assert (restored / "manifest.json").is_file()
     # 恢复目录非空时拒绝覆盖
     assert backup.main(["restore", "--archive", str(archive), "--to", str(restored)]) == 1
+
+def test_backup_default_dir_ignores_cwd(workspace, tmp_path, monkeypatch):
+    """默认备份目录由配置决定：两个不同 cwd 都落到同一处，且 cwd 里不新增 backups。"""
+    import time
+    from pathlib import Path as _Path
+    from she_memory.common import load_config
+    from she_memory.tools import backup
+
+    cfg = load_config(str(workspace["config"]))
+    default = _Path(cfg["state_root"]).parent / "backups"
+    assert not default.exists()
+    assert not default.resolve().is_relative_to(_Path(cfg["memory_root"]).resolve())
+
+    for name in ("cwd-one", "cwd-two"):
+        cwd = tmp_path / name
+        cwd.mkdir()
+        monkeypatch.chdir(cwd)
+        assert backup.main(["create", "--config", str(workspace["config"])]) == 0
+        assert not (cwd / "backups").exists()
+        time.sleep(1.1)          # 文件名按秒打戳，避免两次同秒覆盖
+
+    archives = sorted(default.glob("*.zip"))
+    assert len(archives) == 2, archives
+    assert backup.main(["verify", "--archive", str(archives[-1])]) == 0

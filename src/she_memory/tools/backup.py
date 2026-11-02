@@ -54,7 +54,17 @@ def collect(cfg):
 
 
 def cmd_create(cfg, out_dir):
-    out = Path(out_dir).resolve() if out_dir else Path.cwd() / "backups"
+    out = Path(out_dir).resolve() if out_dir else Path(cfg["state_root"]).parent / "backups"
+    # 默认目录由配置决定、与 cwd 无关；也绝不允许落在来源目录里（否则备份会被当成来源递归收录）
+    source = Path(cfg["memory_root"]).resolve()
+    try:
+        out.resolve().relative_to(source)
+    except ValueError:
+        pass
+    else:
+        print(json.dumps({"ok": False, "error": "backup_inside_source", "target": str(out)},
+                         ensure_ascii=False))
+        return 1
     out.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
     archive = out / f"agent-recall-kit-backup-{stamp}.zip"
@@ -115,7 +125,7 @@ def main(argv=None):
     base.add_argument("--config", default=argparse.SUPPRESS)
 
     p_create = sub.add_parser("create", parents=[base], help="创建备份")
-    p_create.add_argument("--out", help="备份输出目录（默认 ./backups）")
+    p_create.add_argument("--out", help="备份输出目录（默认 <state_root>/../backups，与 cwd 无关）")
     p_verify = sub.add_parser("verify", parents=[base], help="校验备份")
     p_verify.add_argument("--archive", required=True)
     p_restore = sub.add_parser("restore", parents=[base], help="隔离恢复（解到空目录）")

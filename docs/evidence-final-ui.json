@@ -1,0 +1,166 @@
+{
+  "checks": [
+    {
+      "name": "页面标题为 Agent Recall Kit",
+      "ok": true,
+      "detail": "Agent Recall Kit · 记忆图谱"
+    },
+    {
+      "name": "主标题统一",
+      "ok": true,
+      "detail": "不止于记录，更在于回忆。"
+    },
+    {
+      "name": "footer 品牌为 Agent Recall Kit",
+      "ok": true,
+      "detail": "Agent Recall Kit 0.1 · 本地记忆服务 · 不承担聊天人格或自动执行"
+    },
+    {
+      "name": "三个 chip 的标签与 data-query 同步改到演示库",
+      "ok": true,
+      "detail": [
+        {
+          "label": "滴灌阀型号",
+          "q": "滴灌阀型号是什么"
+        },
+        {
+          "label": "控制器固件版本",
+          "q": "控制器固件版本是多少"
+        },
+        {
+          "label": "卡涩结论",
+          "q": "低温卡涩的结论是什么"
+        }
+      ]
+    },
+    {
+      "name": "输入框示例改为演示库问法",
+      "ok": true,
+      "detail": "例如：滴灌阀怎么验收"
+    },
+    {
+      "name": "chip「滴灌阀型号是什么」真实点击有结果",
+      "ok": true,
+      "detail": {
+        "results": 4,
+        "first": "01_site.yaml:5 · fact读取此来源"
+      }
+    },
+    {
+      "name": "chip「控制器固件版本是多少」真实点击有结果",
+      "ok": true,
+      "detail": {
+        "results": 4,
+        "first": "01_site.yaml:14 · fact读取此来源"
+      }
+    },
+    {
+      "name": "chip「低温卡涩的结论是什么」真实点击有结果",
+      "ok": true,
+      "detail": {
+        "results": 3,
+        "first": "entries/2025-11-03-valve-winter-answer.m"
+      }
+    },
+    {
+      "name": "另一客户端完成真实变更（R+1）",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "revision": 2,
+          "unit_id": "unit:04cf942f-d7df-5c3c-96bb-16e1d13cf7f4",
+          "pinned": true
+        }
+      }
+    },
+    {
+      "name": "旧 R 提交保护被服务端拒绝，页面提示重新读取",
+      "ok": true,
+      "detail": "版本冲突：图已经被别的操作更新（当前页不是最新），请先重新读取，再重试保护。本次没有写入任何状态。"
+    },
+    {
+      "name": "失败时不显示成功、不改页面 revision",
+      "ok": true,
+      "detail": {
+        "revision": 1,
+        "r": 1
+      }
+    },
+    {
+      "name": "服务端没有写入这次保护",
+      "ok": true,
+      "detail": {
+        "pinned": false
+      }
+    },
+    {
+      "name": "重新读取后拿到更新的 revision",
+      "ok": true,
+      "detail": {
+        "before": 1,
+        "after": 2
+      }
+    },
+    {
+      "name": "重新读取后重试成功",
+      "ok": true,
+      "detail": {
+        "notice": "已保护：这条记录不再随时间衰减。",
+        "pinned": 2
+      }
+    }
+  ],
+  "head": {
+    "title": "Agent Recall Kit · 记忆图谱",
+    "h1": "不止于记录，更在于回忆。",
+    "footer": "Agent Recall Kit 0.1 · 本地记忆服务 · 不承担聊天人格或自动执行",
+    "chips": [
+      {
+        "label": "滴灌阀型号",
+        "q": "滴灌阀型号是什么"
+      },
+      {
+        "label": "控制器固件版本",
+        "q": "控制器固件版本是多少"
+      },
+      {
+        "label": "卡涩结论",
+        "q": "低温卡涩的结论是什么"
+      }
+    ],
+    "placeholder": "例如：滴灌阀怎么验收"
+  },
+  "chipResults": [
+    {
+      "q": "滴灌阀型号是什么",
+      "title": "查询结果 · ok",
+      "results": 4,
+      "first": "01_site.yaml:5 · fact读取此来源",
+      "notice": "展开 33 条边；4 组证据；高亮 3 条真实 edge id。"
+    },
+    {
+      "q": "控制器固件版本是多少",
+      "title": "查询结果 · ok",
+      "results": 4,
+      "first": "01_site.yaml:14 · fact读取此来源",
+      "notice": "展开 24 条边；4 组证据；高亮 3 条真实 edge id。"
+    },
+    {
+      "q": "低温卡涩的结论是什么",
+      "title": "查询结果 · ok",
+      "results": 3,
+      "first": "entries/2025-11-03-valve-winter-answer.md:1 · entry读取此来源",
+      "notice": "展开 28 条边；3 组证据；高亮 0 条真实 edge id。"
+    }
+  ],
+  "stale": {
+    "notice": "版本冲突：图已经被别的操作更新（当前页不是最新），请先重新读取，再重试保护。本次没有写入任何状态。",
+    "panel": "权重 0.360 · 依据 parsed_date · 约 365 天保护这条记录有帮助没帮助",
+    "revision": 1
+  },
+  "retry": {
+    "notice": "已保护：这条记录不再随时间衰减。",
+    "pinned": 2
+  }
+}

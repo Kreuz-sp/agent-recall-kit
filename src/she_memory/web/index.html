@@ -1,14 +1,14 @@
 ﻿<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>She · 记忆图谱</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/style.css"></head>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agent Recall Kit · 记忆图谱</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/style.css"></head>
 <body>
-<header><div><span class="eyebrow">AGENT RECALL KIT</span><h1>记忆之间，有迹可循。</h1><p>保存来源，整理联系，让经验在下一次被找到。</p></div><div class="badge" id="status">尚未连接</div></header>
+<header><div><span class="eyebrow">AGENT RECALL KIT</span><h1>不止于记录，更在于回忆。</h1><p>保存来源，整理联系，让经验在下一次被找到。</p></div><div class="badge" id="status">尚未连接</div></header>
 <section class="connect" id="connection"><label>本机连接码 <input id="token" type="password" placeholder="读取启动窗口指向的 access-token.txt" autocomplete="off"></label><button id="connect">连接记忆服务</button><span>连接码只保存在当前页面内存。</span></section>
 <main>
 <aside class="left">
   <div class="section-label">寻找记忆</div>
-  <textarea id="question" rows="2" placeholder="例如：显示器到货验什么"></textarea>
+  <textarea id="question" rows="2" placeholder="例如：滴灌阀怎么验收"></textarea>
   <button id="query">沿关系查找</button>
-  <div class="chips"><button data-query="显示器到货验什么">显示器验收</button><button data-query="银行卡到了没">银行卡状态</button><button data-query="中文替换怎么处理">编码经验</button></div>
+  <div class="chips"><button data-query="滴灌阀型号是什么">滴灌阀型号</button><button data-query="控制器固件版本是多少">控制器固件版本</button><button data-query="低温卡涩的结论是什么">卡涩结论</button></div>
 
   <div class="section-label">定位节点</div>
   <div class="search-row"><input id="search" placeholder="实体名 / 文档路径 / 完整标签"><button id="search-go">定位</button></div>
@@ -53,5 +53,5 @@
   <div id="results"></div>
 </aside>
 </main>
-<footer>Memory Brain 0.1 · 图书馆与索引员 · 不承担聊天人格或自动执行</footer>
+<footer>Agent Recall Kit 0.1 · 本地记忆服务 · 不承担聊天人格或自动执行</footer>
 <script src="/app.js"></script></body></html>

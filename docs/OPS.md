@@ -36,7 +36,8 @@ agent-recall-kit-doctor --config .\my-data\agent-recall-kit.json
 ## 备份 / 校验 / 隔离恢复
 
 ```powershell
-agent-recall-kit-backup create --config .\my-data\agent-recall-kit.json --out .\backups
+agent-recall-kit-backup create --config .\my-data\agent-recall-kit.json   # 默认写到 my-data\data\backups
+agent-recall-kit-backup create --config .\my-data\agent-recall-kit.json --out D:\somewhere\bk   # 覆盖
 agent-recall-kit-backup verify --archive .\backups\agent-recall-kit-backup-*.zip
 agent-recall-kit-backup restore --archive .\backups\....zip --to .\restored-copy
 ```
