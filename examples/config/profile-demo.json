@@ -153,5 +153,15 @@
     ]
    }
   ]
+ },
+ "activation": {
+  "enabled": true,
+  "half_life_days": 60,
+  "floor": 0.35,
+  "decay_kinds": [
+   "entry"
+  ],
+  "tier_strong": 0.9,
+  "tier_related": 0.6
  }
 }

@@ -1,4 +1,4 @@
-# Agent Recall Kit
+﻿# Agent Recall Kit
 
 本地、可追溯的 Agent 记忆工具包 · 0.1.0 预览版
 
@@ -81,6 +81,29 @@ agent-recall-kit --config .\my-data\agent-recall-kit.json query "滴灌阀 型�
 agent-recall-kit --config .\my-data\agent-recall-kit.json fetch --unit unit:... --version <sha256>
 agent-recall-kit-ctl --config .\my-data\agent-recall-kit.json status
 agent-recall-kit-doctor --config .\my-data\agent-recall-kit.json
+```
+
+## 淡忘与再激活（本版新增）
+
+普通经历（`kind=entry`）会随时间慢慢沉到检索后面；**原文、节点、边、证据都不会消失**，明确查历史仍然找得到。
+重要事实、约定、待办、知识/经验默认受保护；也可以对单条记录 **pin**。
+
+- 权重：`floor + (1-floor) * 2^(-age_days/half_life_days)`，首版默认 `half_life=90 天`、`floor=0.35`。
+  这是产品初始值，不是从人脑研究推出来的。
+- 时间依据优先级：显式元数据 → 文件名/标题里解析器认可的日期 → 首次入库时间；返回里带 `time_basis`，
+  **不拿文件 mtime 冒充经历时间**，复制/迁库/刷新/改正文都不重置年龄。
+- 衰减只影响**同一相关度层级内**的顺序：无关的新记录不能靠新鲜盖过明确匹配的旧记录，也不会把旧记忆变成 `no_match`。
+- `ambiguous` / 冲突不会按年龄消解；「旧」「新」不证明是同一件事。
+- 只有明确反馈 **helpful** 才重新活跃（`event_id` 幂等、同单元同 UTC 日最多一次）；`not_helpful` 只记账、不惩罚。
+  query / fetch / 预览 / 点击节点都不会自动强化。
+- 管理界面有「活跃程度」开关（只调透明度，最低 0.45，低活跃节点仍可点开读原文）、保护/取消保护、
+  有帮助/没帮助按钮；详情里显示权重、时间依据、最近有用反馈。
+
+```powershell
+agent-recall-kit --config .\my-data\agent-recall-kit.json feedback `
+  --unit <unit_id> --version <source_version> --event evt-001 --result helpful
+agent-recall-kit --config .\my-data\agent-recall-kit.json pin --unit <unit_id>
+agent-recall-kit --config .\my-data\agent-recall-kit.json unpin --unit <unit_id>
 ```
 
 ## 已验证环境

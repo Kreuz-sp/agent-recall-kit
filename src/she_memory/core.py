@@ -1,4 +1,4 @@
-import collections
+﻿import collections
 import math
 import re
 import uuid
@@ -7,6 +7,8 @@ from .common import MemoryErrorCode, digest, now, read_json
 from pathlib import Path
 from .graph import alias_matches, compile_graph, make_edge, tokens
 from .assembly import assemble
+from .activation import (ActivationError, activation_entry, activation_map, bypass_reason, ensure_state,
+                          order_with_activation, parse_iso, policy_from, resolve, utcnow)
 from .profile import load_profile
 from .query_pipeline import (build_adjacency, classify, graph_paths, load_roles,
                              needs_more_evidence, normalize, rank, registered_units, route)
@@ -21,21 +23,33 @@ def file_digest(path):
 
 
 class Brain:
-    def __init__(self, config):
+    def __init__(self, config, clock=None):
         self.config = config
         self.store = Store(config['state_root'])
         self.entities = read_json(config['entities_file'])
         self.profile = load_profile(config.get('profile_file'))
+        self.activation_policy = policy_from(self.profile, config)
+        self.clock = clock
         self.traces = collections.OrderedDict()
+
+    def now(self):
+        return utcnow(self.clock)
 
     def health(self):
         data = self.store.read()
+        activation = ensure_state(data)
         return {'schema_version': '1.0', 'version': '0.1.0', 'mode': self.config['mode'],
                 'revision': data['revision'], 'nodes': len(data['nodes']), 'edges': len(data['edges']),
                 'coverage': {k: v for k, v in data['coverage'].items() if k != 'files'},
                 'profile': self.profile.summary(),
+                'activation': {'enabled': self.activation_policy['enabled'],
+                               'half_life_days': self.activation_policy['half_life_days'],
+                               'floor': self.activation_policy['floor'],
+                               'decay_kinds': self.activation_policy['decay_kinds'],
+                               'tracked_units': len(activation['units']),
+                               'feedback_events': len(activation['feedback'])},
                 'capabilities': {'query_fetch': True, 'graph_edit': True,
-                                 'source_write': False, 'automatic_supply': False,
+                                 'feedback': True, 'source_write': False, 'automatic_supply': False,
                                  'experience_commit': False, 'object_merge': False}}
 
     def refresh(self):
@@ -44,6 +58,23 @@ class Brain:
             read = scan(self.config['memory_root'], self.profile)
             old['units'] = read['units']
             old['coverage'] = read['coverage']
+            # 首次入库时间在这里初始化；已有状态一律保留，不替旧经历捏造历史。
+            activation = ensure_state(old)
+            stamp = self.now().isoformat().replace('+00:00', 'Z')
+            for unit in read['units']:
+                entry = activation['units'].get(unit['id'])
+                if entry is None:
+                    activation['units'][unit['id']] = {
+                        'first_seen_at': stamp, 'source_version': unit['source_version'],
+                        'pin': False, 'last_helpful_at': None, 'last_helpful_day': None,
+                        'feedback_count': 0}
+                else:
+                    entry.setdefault('pin', False)
+                    if entry.get('source_version') != unit['source_version']:
+                        # 同 unit_id 换了版本：首见时间不重置，旧版本的有效反馈不再作用于新内容
+                        entry['source_version'] = unit['source_version']
+                        entry['last_helpful_at'] = None
+                        entry['last_helpful_day'] = None
             # 统一装配：编译 → 核验并合并导入断言 → 应用人工停用
             old['nodes'], old['edges'], old['candidates'], report = assemble(
                 self.config, read['units'], self.entities, old, self.profile)
@@ -97,7 +128,9 @@ class Brain:
         return {'memory_id': unit['id'], 'source_version': unit['source_version'],
                 'text': unit['body'],
                 'citation': {'path': unit['path'], 'locator': unit['locator'],
-                             'lines': [unit['line'], unit['end_line']]}}
+                             'lines': [unit['line'], unit['end_line']]},
+                'activation': resolve(unit, activation_entry(ensure_state(self.store.read()), unit['id']),
+                                      self.now(), self.activation_policy)}
 
     def _coverage(self, data):
         """解析覆盖：不返回 files 明细（太长），其余原样。"""
@@ -109,10 +142,13 @@ class Brain:
         mode='overview'：同一份已发布快照的全集（含 disabled 边，带 lifecycle）。
         mode='local' 或未传：沿用原有有界展开（保持旧调用行为）。
         新增字段只加不改；数量、图、候选都取自同一次 store.read()。
+        另附 activation 映射（界面用来调透明度；不删任何节点）。
         """
         data = self.store.read()
         nodes = {n['id']: n for n in data['nodes']}
         total_nodes, total_edges = len(nodes), len(data['edges'])
+        activation_state = ensure_state(data)
+        now = self.now()
         if mode == 'overview':
             # 按 id 排序保证稳定；去重以防快照里出现重复（正常不会）
             picked_nodes = [nodes[i] for i in sorted(nodes)]
@@ -125,6 +161,9 @@ class Brain:
                     'partial': False, 'coverage': self._coverage(data),
                     'nodes': unique_nodes, 'edges': unique_edges,
                     'candidates': data['candidates'],
+                    'activation': {'enabled': self.activation_policy['enabled'],
+                                   'units': activation_map(data['units'], activation_state, now,
+                                                           self.activation_policy)},
                     'candidate_meta': {'total': len(data['candidates']), 'generation_cap': 200,
                                        'note': '当前生成的候选；生成上限 200，不是全部潜在关系'}}
 
@@ -143,6 +182,9 @@ class Brain:
                 'returned_nodes': len(ids), 'returned_edges': len(picked_edges),
                 'nodes': [nodes[i] for i in ids], 'edges': picked_edges,
                 'candidates': data['candidates'], 'partial': len(ids) < total_nodes,
+                'activation': {'enabled': self.activation_policy['enabled'],
+                               'units': activation_map([nodes[i] for i in ids if i.startswith('unit:')],
+                                                       activation_state, now, self.activation_policy)},
                 'coverage': self._coverage(data)}
 
     def candidate_detail(self, candidate_id):
@@ -244,6 +286,19 @@ class Brain:
                 elif action == 'restore':
                     data['disabled'] = [i for i in data['disabled'] if i != edge_id]
                 result = {'edge_id': edge_id}
+            elif action in ('pin', 'unpin'):
+                uid = payload.get('unit_id')
+                if uid not in units:
+                    raise MemoryErrorCode('not_found')
+                activation = ensure_state(data)
+                entry = activation['units'].get(uid)
+                if entry is None:
+                    entry = {'first_seen_at': self.now().isoformat().replace('+00:00', 'Z'),
+                             'source_version': units[uid]['source_version'], 'pin': False,
+                             'last_helpful_at': None, 'last_helpful_day': None, 'feedback_count': 0}
+                    activation['units'][uid] = entry
+                entry['pin'] = action == 'pin'
+                result = {'unit_id': uid, 'pinned': entry['pin']}
             elif action in ('accept', 'reject'):
                 candidate = next((c for c in data['candidates'] if c['id'] == payload.get('candidate_id')), None)
                 if not candidate:
@@ -260,6 +315,67 @@ class Brain:
             return result
         signature = action + ':' + digest(payload)
         return self.store.mutate(expected_revision, key, signature, change)
+
+    def feedback(self, unit_id, expected_source_version, event_id, result,
+                 expected_revision, key=None):
+        """明确的使用反馈：只有 helpful 才更新活跃时间；不保存问句/聊天/模型正文。
+
+        - event_id 幂等：同一事件重放返回原结果，不推进 revision；
+        - 同一单元同一 UTC 日最多有效强化一次；
+        - 不接受调用方传时间（用服务端时钟），因此不可能写入未来激活时间。
+        """
+        if result not in ('helpful', 'not_helpful'):
+            raise MemoryErrorCode('invalid_feedback_result')
+        if not isinstance(event_id, str) or not 1 <= len(event_id) <= 128:
+            raise MemoryErrorCode('invalid_event_id')
+        if not isinstance(expected_source_version, str) or not expected_source_version:
+            raise MemoryErrorCode('invalid_source_version')
+        data = self.store.read()
+        unit = next((u for u in data['units'] if u['id'] == unit_id), None)
+        if not unit:
+            raise MemoryErrorCode('not_found')
+        if expected_source_version != unit['source_version']:
+            raise MemoryErrorCode('source_changed')
+        try:
+            current = file_digest(Path(self.config['memory_root']) / unit['path'])
+        except OSError:
+            raise MemoryErrorCode('not_found')
+        if current != unit['source_version']:
+            raise MemoryErrorCode('source_changed', 'source changed on disk; refresh required')
+
+        activation = ensure_state(data)
+        prior = activation['feedback'].get(event_id)
+        now = self.now()
+        if prior is not None:
+            summary = resolve(unit, activation['units'].get(unit_id), now, self.activation_policy)
+            return {'unit_id': unit_id, 'result': prior.get('result'),
+                    'effective': bool(prior.get('effective')), 'deduplicated': True,
+                    'weight': summary['weight'],
+                    'last_helpful_at': (activation['units'].get(unit_id) or {}).get('last_helpful_at')}
+        stamp = now.isoformat().replace('+00:00', 'Z')
+        day = now.date().isoformat()
+
+        def change(state):
+            state_activation = ensure_state(state)
+            entry = state_activation['units'].setdefault(unit_id, {
+                'first_seen_at': stamp, 'source_version': unit['source_version'], 'pin': False,
+                'last_helpful_at': None, 'last_helpful_day': None, 'feedback_count': 0})
+            effective = False
+            if result == 'helpful' and entry.get('last_helpful_day') != day:
+                entry['last_helpful_at'] = stamp
+                entry['last_helpful_day'] = day
+                entry['feedback_count'] = int(entry.get('feedback_count') or 0) + 1
+                effective = True
+            state_activation['feedback'][event_id] = {
+                'unit_id': unit_id, 'result': result, 'at': stamp, 'effective': effective}
+            summary = resolve(unit, entry, now, self.activation_policy)
+            return {'unit_id': unit_id, 'result': result, 'effective': effective,
+                    'deduplicated': False, 'weight': summary['weight'],
+                    'last_helpful_at': entry.get('last_helpful_at'),
+                    'feedback_count': entry.get('feedback_count', 0)}
+
+        signature = 'feedback:' + unit_id + ':' + event_id + ':' + result
+        return self.store.mutate(expected_revision, key or event_id, signature, change)
 
     def query(self, text, max_items=3, context=None):
         # context: {"focus_terms": [...]} —— 上一层传下来的会话焦点（可为空）
@@ -369,20 +485,39 @@ class Brain:
             for uid in reg_hits - have:
                 bumped.append((base * 1.2, by_uid[uid], []))
             ranked = sorted(bumped, key=lambda x: -x[0])
+        # 明确单元 / 来源路径定位：即使没有词面命中，也要能把这条材料找回来
+        # （它仍然会走后面的来源版本核验；这里只是让它进入候选集合）
+        lowered_text = text.lower()
+        explicit_ids = {u['id'] for u in data['units']
+                        if u['id'].lower() in lowered_text
+                        or (u.get('path') and len(u['path']) > 8 and u['path'].lower() in lowered_text)}
+        if explicit_ids:
+            have = {u['id'] for _, u, _ in ranked}
+            fill = max([s for s, _, _ in ranked] or [1.0])
+            for u in data['units']:
+                if u['id'] in explicit_ids and u['id'] not in have:
+                    ranked.append((fill, u, []))
+                    have.add(u['id'])
+            ranked = sorted(ranked, key=lambda x: -x[0])
         df = {}
         usable = [u for u in data['units'] if u['kind'] != 'source_metadata']
         for u in usable:
             for w in (norm['words'] & tokens(u['search_text'])):
                 df[w] = df.get(w, 0) + 1
 
-        base_status, chosen, rivals = classify(ranked, norm, df, len(usable), graph_ok=graph_only, allow_common=(branch == 'focus' or bool(norm['objects'])), profile=self.profile)
+        base_status, chosen, rivals = classify(ranked, norm, df, len(usable), graph_ok=(graph_only | explicit_ids), allow_common=(branch == 'focus' or bool(norm['objects'])), profile=self.profile)
         result['budget']['expanded_edges'] = expanded
+        # 衰减层：只在同一相关度层级内重排；状态与 rivals 仍用衰减前的结果——
+        # 年龄不许把问题变成 no_match，也不许拿来消解歧义。
+        ordered, activation_explain = order_with_activation(
+            ranked, by_units, data, self.now(), self.activation_policy, norm, text)
+        result['activation'] = activation_explain
 
         # ── 统一口径：先选定最终输出集合，再对**这个集合**核验、定型、返回 ──
         if base_status == 'no_match':
             picked = []
         else:
-            picked = [row[1] for row in ranked[:max(1, min(5, max_items))]]
+            picked = [row[1] for row in ordered[:max(1, min(5, max_items))]]
         # ── 同一对象的多来源合并（在核验之前并入 picked，走同一套核验与定型）──
         nav_cfg = self.profile.get('navigation') or {}
         threads_file = nav_cfg.get('threads_file', 'open-threads.md')
@@ -444,13 +579,20 @@ class Brain:
         # ④ 返回的就是刚才核验的那一批
         for unit in picked:
             node_ids, edge_ids = paths.get(unit['id'], ([unit['id']], []))
+            act_summary = resolve(unit, activation_entry(ensure_state(data), unit['id']),
+                                  self.now(), self.activation_policy)
+            act_bypass = bypass_reason(norm, text, unit)
+            if act_bypass:
+                act_summary['weight'] = 1.0
+            act_summary['bypass'] = act_bypass
             result['items'].append({
                 'memory_id': unit['id'], 'source_version': unit['source_version'],
                 'source_kind': unit['kind'], 'authority_kind': unit['authority_kind'],
                 'text': unit['body'], 'conditions': [], 'temporal_scope': {}, 'maturity': None,
                 'citation': {'path': unit['path'], 'locator': unit['locator'],
                              'lines': [unit['line'], unit['end_line']]},
-                'path': {'node_ids': node_ids, 'edges': edge_ids}})
+                'path': {'node_ids': node_ids, 'edges': edge_ids},
+                'activation': act_summary})
         # 只有真的经过边才算图检索；否则老实标成词面兜底
         result['retrieval_mode'] = 'graph' if any(i['path']['edges'] for i in result['items']) else 'lexical_fallback'
         if rivals:

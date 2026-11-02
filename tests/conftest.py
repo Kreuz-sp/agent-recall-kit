@@ -1,4 +1,4 @@
-"""测试夹具：全部用 tmp_path 里的假库与临时端口，不读作者本机任何配置。"""
+﻿"""测试夹具：全部用 tmp_path 里的假库与临时端口，不读作者本机任何配置。"""
 import json
 import os
 import socket
@@ -121,10 +121,10 @@ def workspace(tmp_path):
     return {"tmp": tmp_path, "library": library, "config": config}
 
 
-def brain(config):
+def brain(config, clock=None):
     from she_memory.common import load_config
     from she_memory.core import Brain
-    return Brain(load_config(str(config)))
+    return Brain(load_config(str(config)), clock=clock)
 
 
 def free_port():

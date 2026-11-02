@@ -70,3 +70,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File adapters\windows\guard_task.
 4. `start`。
 
 图快照自带 `revision` 与哈希校验；旧快照可以被新版本读取，但**反向不保证**。
+
+
+## 备份里的活跃度元数据
+
+ctivation（irst_seen_at / last_helpful_at / pin / 反馈去重记录）就在图快照里，
+所以 gent-recall-kit-backup create 天然包含它；erify 会逐项校验 sha256，
+隔离恢复后在**固定时钟**下权重与排序应与备份前一致。恢复只解到空目录，不覆盖正在运行的实例。

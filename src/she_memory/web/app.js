@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 // She 记忆图谱：全库总览 / 主题局部 / 候选审核
 // 约定：接口字段只读不改；所有数量来自同一次 /v1/graph/view 响应。
 
@@ -188,6 +188,12 @@ function renderGraph() {
     const title = element('title', {});
     title.textContent = fullLabel(node);
     g.append(title);
+    const act = (S.activationUnits || {})[node.id];
+    if (act) {
+      g.dataset.weight = String(act.weight);
+      if (act.pinned) g.classList.add('pinned');
+      if (act.protected) g.classList.add('protected');
+    }
 
     let dragging = false, moved = false, start;
     g.addEventListener('pointerdown', ev => {
@@ -325,11 +331,100 @@ async function selectNode(id) {
       const unit = await api('/v1/fetch', {unit_id: id, expected_source_version: node.source_version});
       $('detail-meta').textContent = `${unit.citation?.path || ''}:${unit.citation?.lines?.[0] || ''} · ${unit.source_kind || node.kind} · v${String(unit.source_version).slice(0, 12)}`;
       $('detail-body').textContent = unit.text || '';
+      renderActivationPanel(unit);
     } catch (error) {
       $('detail-body').textContent = `读取失败：${ERROR_TEXT[error.message] || error.message}。这不是原文——请重新读取来源后再看。`;
+      renderActivationPanel(null);
     }
   } else {
     $('detail-body').textContent = `${kindText}节点：不是来源单元，没有正文。相邻的来源单元才有原文；可按类型 id（${id}）在检索里引用它。`;
+    renderActivationPanel(null);
+  }
+}
+
+// ── 活跃度 / 保护 / 反馈 ────────────────────────────────────
+function applyActivation() {
+  const on = $('activation-toggle') && $('activation-toggle').checked;
+  for (const [id, el] of S.nodeEls) {
+    const act = (S.activationUnits || {})[id];
+    if (!on || !act) { el.style.opacity = ''; continue; }
+    // 只调透明度，不删节点；最低 0.45，保证仍然点得到
+    const weight = typeof act.weight === 'number' ? act.weight : 1;
+    el.style.opacity = String(Math.max(0.45, Math.min(1, weight)));
+  }
+  const pinned = Object.values(S.activationUnits || {}).filter(a => a.pinned).length;
+  notice(on
+    ? `活跃程度已开：普通经历按权重淡出（最低 0.45，仍可点开）；受保护 ${pinned} 个。`
+    : '活跃程度已关：全部节点按原样显示（图仍是全量，没有删除）。');
+}
+
+function activationLine(act) {
+  if (!act || !act.time_basis) return '活跃度：未记录';
+  const bits = [`权重 ${Number(act.weight ?? 1).toFixed(3)}`, `依据 ${act.time_basis}`];
+  if (act.age_days !== null && act.age_days !== undefined) bits.push(`约 ${Math.round(act.age_days)} 天`);
+  if (act.pinned) bits.push('已保护（pin）');
+  else if (act.protected) bits.push('默认受保护');
+  if (act.last_helpful_at) bits.push(`最近有帮助 ${act.last_helpful_at}`);
+  if (act.time_note) bits.push(`注：${act.time_note}`);
+  return bits.join(' · ');
+}
+
+function renderActivationPanel(unit) {
+  const panel = $('activation-panel');
+  panel.replaceChildren();
+  panel.classList.remove('hint');
+  if (!unit || !unit.activation) { panel.classList.add('hint'); panel.textContent = '这个节点没有活跃度元数据（不是来源单元）。'; return; }
+  const act = unit.activation;
+  const text = document.createElement('div');
+  text.textContent = activationLine(act);
+  panel.append(text);
+  const row = document.createElement('div');
+  row.className = 'activation-actions';
+  const pinButton = document.createElement('button');
+  pinButton.className = 'secondary';
+  pinButton.id = 'activation-pin';
+  pinButton.textContent = act.pinned ? '取消保护' : '保护这条记录';
+  pinButton.onclick = () => setPin(unit, !act.pinned);
+  const help = document.createElement('button');
+  help.className = 'secondary'; help.id = 'activation-helpful'; help.textContent = '有帮助';
+  help.onclick = () => sendFeedback(unit, 'helpful');
+  const nohelp = document.createElement('button');
+  nohelp.className = 'secondary'; nohelp.id = 'activation-not-helpful'; nohelp.textContent = '没帮助';
+  nohelp.onclick = () => sendFeedback(unit, 'not_helpful');
+  row.append(pinButton, help, nohelp);
+  panel.append(row);
+}
+
+async function setPin(unit, pinned) {
+  try {
+    await api('/v1/graph/edit', {
+      action: pinned ? 'pin' : 'unpin',
+      payload: {unit_id: unit.memory_id},
+      expected_revision: S.graph.revision,
+      idempotency_key: crypto.randomUUID(),
+    });
+    await loadGraph({keepView: true});
+    notice(pinned ? '已保护：这条记录不再随时间衰减。' : '已取消保护：按它原来的时间轨迹计算，不伪造新生日。');
+  } catch (error) {
+    notice(`未完成：${ERROR_TEXT[error.message] || error.message}` + (error.message === 'revision_conflict' ? '（请重新读取后再试）' : ''));
+  }
+}
+
+async function sendFeedback(unit, result) {
+  try {
+    const answer = await api('/v1/feedback', {
+      unit_id: unit.memory_id,
+      expected_source_version: unit.source_version,
+      event_id: crypto.randomUUID(),
+      result,
+      expected_revision: S.graph.revision,
+    });
+    await loadGraph({keepView: true});
+    notice(result === 'helpful'
+      ? (answer.effective ? '已记录「有帮助」：活跃度回升。' : '已记录「有帮助」（同一 UTC 日已强化过一次，本次不再累加）。')
+      : '已记录「没帮助」：只记账，不降权。');
+  } catch (error) {
+    notice(`反馈未写入：${ERROR_TEXT[error.message] || error.message}`);
   }
 }
 const UNIT_KIND_TEXT = {
@@ -584,11 +679,13 @@ async function loadGraph({mode = S.graph.mode, focus = S.focus, keepView = false
   if (token !== S.loadToken) return;            // 期间又切了视图，丢弃旧响应
   S.graph = graph;
   S.focus = mode === 'overview' ? null : focus;
+  S.activationUnits = (graph.activation && graph.activation.units) || {};
   buildIndexes();
   buildPositions();
   renderGraph();
   renderFilters();
   renderCandidates();
+  applyActivation();
   if (!keepView) fitView();
   const meta = [`图版本 ${graph.revision}`, `${graph.total_nodes ?? graph.nodes.length} 节点 / ${graph.total_edges ?? graph.edges.length} 线`];
   if (graph.mode === 'local' || graph.partial) {
@@ -649,6 +746,7 @@ $('cand-prev').addEventListener('click', () => { S.cand.page = Math.max(0, S.can
 $('cand-next').addEventListener('click', () => { S.cand.page += 1; S.cand.open.clear(); renderCandidates(); });
 
 $('fit').addEventListener('click', () => { fitView(); notice('已适应画布（全图不裁切）。'); });
+$('activation-toggle').addEventListener('change', applyActivation);
 $('save-layout').addEventListener('click', saveLayout);
 $('refresh').addEventListener('click', guarded(async () => {
   await api('/v1/refresh', {});

@@ -79,6 +79,14 @@ TOOLS = [
           "查看最近一次查询为什么选中这些资料：入口、候选数、最高分、走了哪些边。",
           {"query_id": {"type": "string"}}, ["query_id"]),
     _tool("memory_health", "服务状态：图版本、节点/边数量、来源覆盖、可用能力。", {}, []),
+    _tool("memory_feedback",
+          "记录一次明确的使用反馈（写元数据；只有 helpful 会提升活跃度）。不接收问句或正文；event_id 幂等，同单元同 UTC 日最多有效一次。",
+          {"unit_id": {"type": "string"},
+           "expected_source_version": {"type": "string"},
+           "event_id": {"type": "string"},
+           "result": {"type": "string", "enum": ["helpful", "not_helpful"]},
+           "expected_revision": {"type": "integer", "minimum": 1}},
+          ["unit_id", "expected_source_version", "event_id", "result", "expected_revision"]),
 ]
 TOOL_MAP = {t["name"]: t for t in TOOLS}
 
@@ -102,6 +110,8 @@ def validate(name, args):
         if kind == "string":
             if not isinstance(value, str):
                 problems.append("%s must be string" % key)
+            elif spec.get("enum") and value not in spec["enum"]:
+                problems.append("%s must be one of %s" % (key, spec["enum"]))
         elif kind == "integer":
             if isinstance(value, bool) or not isinstance(value, int):
                 problems.append("%s must be integer" % key)
@@ -139,6 +149,13 @@ def dispatch(service, name, args):
         result = service.call("/v1/queries/%s/explain" % args["query_id"])
     elif name == "memory_health":
         result = service.call("/v1/health")
+    elif name == "memory_feedback":
+        result = service.call("/v1/feedback", {
+            "unit_id": args["unit_id"],
+            "expected_source_version": args["expected_source_version"],
+            "event_id": args["event_id"],
+            "result": args["result"],
+            "expected_revision": args["expected_revision"]})
     else:
         raise KeyError(name)
     return tool_result(result, bool(result.get("__error__")))

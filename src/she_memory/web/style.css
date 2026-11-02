@@ -1,4 +1,4 @@
-:root{font-family:Inter,"Microsoft YaHei",sans-serif;color:#e5ece9;background:#111a18;--muted:#9eafa7;--line:#2d4038;--accent:#c4e5a1;--bad:#e8a3a3;--card:#18231f}
+﻿:root{font-family:Inter,"Microsoft YaHei",sans-serif;color:#e5ece9;background:#111a18;--muted:#9eafa7;--line:#2d4038;--accent:#c4e5a1;--bad:#e8a3a3;--card:#18231f}
 *{box-sizing:border-box}body{margin:0}
 header{padding:26px 34px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
 .eyebrow,.section-label{font-size:11px;letter-spacing:2px;color:var(--accent)}
@@ -79,3 +79,12 @@ aside>.secondary{display:block;margin:8px 0;width:100%}
 #detail-body{white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.75;color:#d5e3da;background:#131c19;border:1px solid var(--line);border-radius:6px;padding:10px;max-height:340px;overflow:auto}
 .result{display:flex;align-items:center;gap:8px;justify-content:space-between;background:#131c19;border:1px solid var(--line);border-radius:5px;padding:6px 8px;margin-top:6px;font-size:11px;color:var(--muted)}
 footer{padding:12px 28px;border-top:1px solid var(--line);color:#71857a;font-size:11px}
+
+/* 活跃度与保护标记：只调透明度，不改图数据 */
+.toggle{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer}
+.toggle input{width:auto;padding:0;margin:0}
+.node.pinned circle{stroke-dasharray:3 2;stroke-width:2.2;stroke:#e8d98a}
+.node.protected circle{stroke:#8fb8a0}
+.activation-panel{background:#131c19;border:1px solid var(--line);border-radius:6px;padding:8px;margin:6px 0;font-size:11px;line-height:1.7}
+.activation-actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.activation-actions button{padding:5px 8px}

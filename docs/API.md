@@ -59,3 +59,28 @@ partial=false, coverage, nodes, edges, candidates, candidate_meta`。
 | `not_supported` | 501 |
 | 其余（`invalid_*`、`request_size_limit`、`invalid_layout`…） | 400 |
 | 服务内部不可用 | 503 |
+
+
+## 活跃度与反馈（本版新增）
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | /v1/feedback | {unit_id, expected_source_version, event_id, result, expected_revision, idempotency_key?}；
+esult 只能是 helpful / 
+ot_helpful |
+| POST | /v1/graph/edit | action 新增 pin / unpin，payload {unit_id}（仍需 expected_revision） |
+
+/v1/feedback 的行为契约：
+
+- 先核当前原件版本（expected_source_version 与磁盘哈希都要对上），否则 409 source_changed；
+- event_id 幂等：同一事件重放返回原结果（deduplicated=true），**不推进 revision**；
+- 同一单元同一 UTC 日最多有效强化一次；同日第二次 helpful 返回 effective=false；
+- 
+ot_helpful 只记录，不降权；
+- 不接受调用方传时间，因此不可能写入未来激活时间；不保存问句/聊天/模型正文；
+- expected_revision 不符 → 409 
+evision_conflict。
+
+/v1/fetch 的返回多一个 ctivation 字段：weight / time_basis / age_days / pinned / protected / last_helpful_at / time_note。
+/v1/graph/view 多一个顶层 ctivation：{enabled, units: {unit_id: 同上}}，界面用它调透明度（不删任何节点）。
+/v1/query 的每个返回项也带 ctivation（含 ypass 原因），顶层 ctivation 给出 policy、层级、decay 计数与 ypass。

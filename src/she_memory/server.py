@@ -89,6 +89,12 @@ def make_server(brain, port=18767):
                 result = brain.query(body.get('text'), body.get('max_items', 3), body.get('context'))
             elif self.command == 'POST' and path == '/v1/fetch':
                 result = brain.fetch(body.get('unit_id'), body.get('expected_source_version'))
+            elif self.command == 'POST' and path == '/v1/feedback':
+                # 只收元数据：unit_id / 版本 / event_id / result；不接收问句或正文
+                result = brain.feedback(body.get('unit_id'), body.get('expected_source_version'),
+                                        body.get('event_id'), body.get('result'),
+                                        body.get('expected_revision'),
+                                        body.get('idempotency_key') or body.get('event_id'))
             elif self.command == 'POST' and path == '/v1/graph/view':
                 result = brain.graph_view(body.get('focus'), body.get('limit', 120), body.get('mode'))
             elif self.command == 'POST' and path == '/v1/candidates/detail':

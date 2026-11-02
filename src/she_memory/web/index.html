@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>She · 记忆图谱</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/style.css"></head>
 <body>
 <header><div><span class="eyebrow">AGENT RECALL KIT</span><h1>记忆之间，有迹可循。</h1><p>保存来源，整理联系，让经验在下一次被找到。</p></div><div class="badge" id="status">尚未连接</div></header>
@@ -34,6 +34,7 @@
     <span id="coverage" class="hint"></span>
     <button class="secondary" id="fit">适应画布</button>
     <button class="secondary" id="save-layout">保存布局</button>
+    <label class="toggle"><input type="checkbox" id="activation-toggle"> 活跃程度</label>
     <button class="secondary" id="refresh">重新读取来源</button>
   </div>
   <svg id="canvas" aria-label="记忆关联图"><g id="viewport"><g id="edges"></g><g id="nodes"></g><g id="labels"></g></g></svg>
@@ -47,6 +48,7 @@
   <p id="detail-meta" class="hint">图在查询前已经存在。查询会高亮本次使用的路径。</p>
   <div class="actions"><button class="secondary" id="set-from">设为连线起点</button><button class="secondary" id="link-to">关联到当前节点</button><button class="secondary" id="edge-action">停用 / 恢复所选线</button></div>
   <p id="link-state" class="hint"></p>
+  <div id="activation-panel" class="activation-panel hint">选择一个来源单元后显示活跃度、保护状态与反馈入口。</div>
   <pre id="detail-body">原文会显示在这里。</pre>
   <div id="results"></div>
 </aside>

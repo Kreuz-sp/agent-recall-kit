@@ -1,4 +1,4 @@
-"""命令行入口：init / scan / build / query / fetch / serve / doctor。
+﻿"""命令行入口：init / scan / build / query / fetch / serve / doctor。
 
 所有命令只认 --config 指向的配置文件；不在源码树里写任何运行状态。
 """
@@ -9,6 +9,7 @@ import shutil
 import sys
 from pathlib import Path
 
+from .activation import ActivationError
 from .common import MemoryErrorCode, load_config
 from .readers import scan
 
@@ -102,6 +103,26 @@ def cmd_doctor(args):
     return 0
 
 
+def cmd_feedback(args):
+    brain = _brain(args.config)
+    revision = brain.store.read()["revision"]
+    result = brain.feedback(args.unit, args.version, args.event, args.result, revision)
+    print(json.dumps(result, ensure_ascii=False, indent=1))
+    return 0
+
+
+def cmd_pin(args, action="pin"):
+    brain = _brain(args.config)
+    revision = brain.store.read()["revision"]
+    result = brain.edit(action, {"unit_id": args.unit}, revision, "cli-%s-%s" % (action, args.unit))
+    print(json.dumps(result, ensure_ascii=False, indent=1))
+    return 0
+
+
+def cmd_unpin(args):
+    return cmd_pin(args, "unpin")
+
+
 def cmd_serve(args):
     from .server import serve
     brain = _brain(args.config)
@@ -143,6 +164,20 @@ def main(argv=None):
     p_serve.add_argument("--port", type=int, default=18791)
     p_serve.set_defaults(func=cmd_serve)
 
+    p_fb = sub.add_parser("feedback", parents=[base],
+                          help="记录一次明确的使用反馈（helpful 才提升活跃度）")
+    p_fb.add_argument("--unit", required=True, help="unit_id")
+    p_fb.add_argument("--version", required=True, help="当前 source_version（版本不符会被拒）")
+    p_fb.add_argument("--event", required=True, help="事件 id（重放不重复写）")
+    p_fb.add_argument("--result", required=True, choices=["helpful", "not_helpful"])
+    p_fb.set_defaults(func=cmd_feedback)
+
+    for name, func, help_text in (("pin", cmd_pin, "保护一个单元（不因时间衰减）"),
+                                  ("unpin", cmd_unpin, "取消保护")):
+        p = sub.add_parser(name, parents=[base], help=help_text)
+        p.add_argument("--unit", required=True)
+        p.set_defaults(func=func)
+
     args = parser.parse_args(argv)
     config = getattr(args, "config", None)
     args.config = config
@@ -151,6 +186,10 @@ def main(argv=None):
     try:
         return args.func(args)
     except MemoryErrorCode as exc:
+        print(json.dumps({"error": {"code": exc.code, "message": str(exc)}}, ensure_ascii=False),
+              file=sys.stderr)
+        return 1
+    except ActivationError as exc:
         print(json.dumps({"error": {"code": exc.code, "message": str(exc)}}, ensure_ascii=False),
               file=sys.stderr)
         return 1
