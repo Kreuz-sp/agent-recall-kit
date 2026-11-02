@@ -1,141 +1,140 @@
-# Agent Recall Kit
+﻿# Agent Recall Kit
 
-**简体中文** | [English](README.en.md)
+[简体中文](README.zh-CN.md) | **English**
 
-### 不止于记录，更在于回忆。
+### Beyond storing memories—recalling them when they matter.
 
-*Beyond storing memories—recalling them when they matter.*
-
-[快速开始](#快速开始) · [接入 Agent](#接入-agent) · [文档](#文档) · [MIT License](LICENSE)
+[Quick start](#quick-start) · [Connect an agent](#connect-an-agent) · [Documentation](#documentation) · [MIT License](LICENSE)
 
 ---
 
 ## What is Memory?
 
-什么是「记忆」？
+In Chinese, the word for memory is **记忆**. I like to think of its two characters as two parts of the same process:
 
-在中文中，我认为「记忆」可以理解为两个部分：**记 + 忆**。
+**记 (jì)**: recording and preserving experiences.
+**忆 (yì)**: finding those experiences again when they matter.
 
-记，是记录和保存经历；忆，是在需要的时候重新找回经历。
+My previous project, [Agent Memory Kit](https://github.com/Kreuz-sp/agent-memory-kit), shared an approach to organizing an agent's memory library. It focused mainly on the first part: helping an agent record, organize, and preserve its experiences.
 
-我的上一个项目 [Agent Memory Kit](https://github.com/Kreuz-sp/agent-memory-kit) 分享了一套面向 Agent 的记忆库架构，主要解决了「记」的问题：让 Agent 能够记录、组织和保存自己的经历。
+**But storing something does not mean being able to recall it.**
 
-**但记下来，不代表能够想起来。**
+As memories accumulate, how do we find the right ones? How do we discover connections between them? And how can past experiences become useful in a new conversation or task?
 
-随着记忆不断积累，如何在需要的时候重新找到它们？如何发现不同记忆之间的联系？又如何让过去的经历在新的交互中重新发挥作用？
-
-这就是 Agent Recall Kit 想要探索的「忆」。
+That is the part Agent Recall Kit explores: **recall**.
 
 ## What is Agent Recall Kit?
 
-Agent Recall Kit 是一套面向个人 Agent、可独立运行的本地记忆工具包，提供记忆关联、检索与可视化管理能力。
+Agent Recall Kit is a standalone, local memory toolkit for personal agents, with relationship graphs, retrieval, and visual management.
 
-它延续了 Agent Memory Kit 的记忆库设计思路，在 Markdown / YAML 原件之上建立关系图谱，帮助 Agent 找回相关经历、核对来源，并将过去的经验用于当前任务。
+Building on the memory-library ideas behind Agent Memory Kit, it creates a graph over Markdown and YAML source files. Agents can retrieve related experiences, check their sources, and use past knowledge in the task at hand.
 
-项目自带 MCP 接口，设计上不绑定特定的 LLM 或 Agent。支持 MCP 的宿主可以接入同一份本地记忆服务。
+The project provides an MCP interface and is designed to work independently of any particular LLM or agent. MCP-compatible hosts can access the same local memory service.
 
-目前已在 **DSH、Codex 和 Cherry Studio** 中验证 MCP 接入与记忆读取。不同版本、宿主和模型的具体支持仍需按配置验证；接通工具也不等于每轮自动调用。
+MCP connectivity and memory reading have been tested with **DSH, Codex, and Cherry Studio**. Compatibility still depends on the host, version, model, and configuration. Connecting tools does not make them run automatically on every turn.
 
 ## Why Another Memory System?
 
-在我设想的个人 Agent 中，认知与记忆应该是两个相对独立的部分：
+In the personal agent I envision, cognition and memory should be relatively independent:
 
-- **Cognitive Brain（认知大脑）**：由 LLM 提供，负责理解、推理、规划与表达。
-- **Memory Brain（记忆大脑）**：负责经历的保存、组织、关联与检索。
+- **Cognitive Brain**: the LLM provides understanding, reasoning, planning, and expression.
+- **Memory Brain**: preserves, organizes, connects, and retrieves experiences.
 
-认知模型可以更换，会话可以结束，但积累下来的记忆应该能够继续承接。
+Models can change and conversations can end, while accumulated memories should remain available.
 
-我们可以更换一个 Agent 的思考方式，却不必因此重新开始认识它。
+We should be able to change how an agent thinks without having to get to know it all over again.
 
-Agent Recall Kit 正是基于这样的想法而诞生的。
+Agent Recall Kit grew out of that idea.
 
 ## A Personal Project, An Open Exploration
 
-这个项目最初源于我对个人陪伴型 Agent 的探索。
+This project began as an exploration of personal companion agents.
 
-我希望分享的不只是一个可以使用的工具，也是一种关于 Agent 长期记忆的设计思路。
+I want to share both a working tool and a way of thinking about long-term agent memory.
 
-目前的实现还有许多值得探索和改进的地方。至于它最终能够发展成什么样，我希望交给更多开发者共同探索。
+There is still plenty to explore and improve. Where this project goes next is something I hope to discover with other developers.
 
-欢迎试用、交流、提出问题，也欢迎分享你的见解。
+Try it, ask questions, share your ideas, or help improve it.
 
-**让 Agent 不止能够记下经历，也能够重新忆起经历。**
+**Help agents do more than record experiences—help them recall them.**
 
 ---
 
-## 看记忆如何长出联系
+## Watch a Memory Network Grow
 
-[![点击观看记忆网络的生长演示](docs/media/recall-growth-poster.jpg)](docs/media/recall-growth.mp4)
+[![Watch the memory network growth demo](docs/media/recall-growth-poster.jpg)](docs/media/recall-growth.mp4)
 
-[观看 20 秒视频](docs/media/recall-growth.mp4) · 无声 · 1080p
+[Watch the 20-second video](docs/media/recall-growth.mp4) · Silent · 1080p
 
-视频展示作者实际图谱的规模与形态，约 2800 个节点、4800 条关系，不展示节点标识、标题或记忆正文。生长顺序是示意编排，并非历史录像。下方界面截图均来自仓库内的虚构演示库。
+The video shows the scale and shape of the author's actual graph: approximately 2,800 nodes and 4,800 relationships, without node identifiers, titles, or memory text. The growth sequence is illustrative, not a historical replay. The interface screenshots below use the fictional demo library included in this repository.
 
-## 它能帮 Agent 记住什么
+## What Can It Help an Agent Recall?
 
-项目里的决定、某次操作为什么失败、已经验证过的方法、仍未办完的事——这些资料不必散落在不同聊天窗口里。
+Project decisions, why an operation failed, a method that worked, or an unfinished task can live in a shared library rather than being scattered across chat windows.
 
-例如，在自带的演示库中：
+Examples from the bundled demo:
 
-| 你问 | 程序提供 |
+| Question | Retrieved evidence |
 |---|---|
-| 滴灌阀型号是什么？ | 对应的事实记录与来源位置 |
-| 控制器固件版本是多少？ | 配置记录中的版本信息 |
-| 低温卡涩的结论是什么？ | 相关经历与结论的原文 |
+| What model is the irrigation valve? | The relevant fact record and its source location |
+| What firmware version does the controller use? | The version stored in the configuration record |
+| What was the conclusion about cold-weather valve sticking? | The original notes and conclusion |
 
-程序返回资料和证据，由接入的模型理解并回答。结果不足或存在多个候选时，也会保留缺项与歧义。
+These questions are translated here for explanation. The bundled demo documents and tested example queries are in Chinese; this is not a claim that English retrieval has been validated.
 
-### 找回过去，并知道它从哪里来
+The service returns evidence for the connected model to interpret. Missing evidence and ambiguous candidates remain visible in the results.
 
-每条来源单元保留文件、定位和版本。需要核对时，可以取回完整原文；文件发生变化后，旧版本读取会被拒绝，避免把缓存当成当前记录。
+### Recall the Information—and Its Source
 
-### 看见记忆之间的关系
+Source units retain their file location and version. Fetch the original text when you need to check it. If a file changes, requests using an outdated source version are rejected rather than returning stale text as current evidence.
 
-全库图谱支持缩放、搜索、拖动、保存布局及关系编辑。程序会提出可能相关的记忆，由你对照两端原文后接受或拒绝；人工判断会持久保存。
+### See How Memories Connect
 
-![全库图谱与来源详情](docs/images/overview.png)
+Browse the full graph, zoom, search, drag nodes, save layouts, and edit relationships. The service proposes potentially related memories; you compare the two sources before accepting or rejecting a proposal. Your decisions persist across restarts.
+
+![Full graph and source details](docs/images/overview.png)
 
 <details>
-<summary>查看关系候选审核</summary>
+<summary>Reviewing relationship candidates</summary>
 
-![对照两条记忆的原文，审核关联建议](docs/images/candidate.png)
+![Compare both original sources before accepting a relationship](docs/images/candidate.png)
 
-共同词只是关联线索，不代表两条记录说的是同一事件。
+Shared words are clues, not proof that two records describe the same event.
 
 </details>
 
-### 让普通经历慢慢沉下去，需要时仍能找回
+### Let Everyday Experiences Fade Without Losing Them
 
-普通经历会随时间降低召回优先级，原文仍然保留。重要事实、知识、经验、待办和承诺默认受保护，也可以手动保护某条经历。
+Ordinary experiences gradually receive lower retrieval priority, while their original text remains available. Facts, knowledge, reusable experience notes, tasks, and promises are protected by default. Individual experiences can also be pinned.
 
-明确查旧事会绕过衰减。真正用上某条记忆后，可以反馈“有帮助”使它重新活跃；仅仅查到、读过或点击，不会自动强化。
+Explicit historical queries bypass decay. When a memory actually helps, an explicit helpfulness report can reactivate it. Searching, reading, or clicking a memory does not reinforce it automatically.
 
 <details>
-<summary>淡忘如何影响排序？</summary>
+<summary>How does decay affect ranking?</summary>
 
-默认权重为：
+The default weight is:
 
 ```text
 w(t) = 0.35 + 0.65 × 2^(−t/90)
 ```
 
-`t` 是距离记忆时间或最近一次有效强化的天数。高于保底值的部分每 90 天减半，权重最低保留 0.35。演示 profile 使用 60 天，便于观察效果；这些参数可以配置。
+Here, `t` is the number of days since the memory's timestamp or its latest effective reinforcement. The portion above the floor halves every 90 days; the weight never drops below 0.35. The demo profile uses 60 days to make the effect easier to observe. These are configurable product defaults, not findings from cognitive science.
 
-先按基础相关度相对本次最高分分层：强相关 ≥90%，相关 ≥60% 且 <90%，弱相关 <60%。跨层保持顺序，层内按“基础相关度 × 活跃权重”排序；同层中较新的记录可能超过分数稍高的旧记录。年龄本身不消解歧义，也不把有资格返回的记录过滤掉。
+Candidates are grouped relative to the highest base relevance score in the current query: strong at ≥90%, related at ≥60% and <90%, and weak below 60%. Tier order is preserved. Within each tier, candidates are ordered by **base relevance × activation weight**. A newer record may therefore outrank a slightly more relevant older record within the same tier. Age alone neither resolves ambiguity nor filters an otherwise eligible record out of retrieval.
 
-时间依据依次是显式元数据、条目文件名/标题中的日期、首次入库时间，不使用文件修改时间。明确历史查询、单元定位或完整引文命中会绕过衰减，但不更新强化时间。
+Time is taken from explicit metadata, a date in the entry filename/title, or the first-seen timestamp, in that order—not from file modification time. Explicit history queries, unit references, and verbatim citations bypass decay without updating reinforcement time.
 
-保护期间权重为 1，取消保护后回到原时间轨迹。只有有效的 `helpful` 反馈会重新激活，同一单元同一 UTC 日最多一次；`not_helpful` 只记录反馈、不降权。反馈事件绑定单元、来源版本和结果，重复事件不重复写入，不同内容复用事件 ID 会报冲突。
+A pinned memory has weight 1. Unpinning returns it to its original timeline rather than resetting its age. Only effective `helpful` feedback reactivates it, at most once per unit per UTC day. `not_helpful` records feedback without penalizing the memory. Feedback events bind the unit, source version, and result; identical replays do not write again, and reusing an event ID with different content produces a conflict.
 
-![查看记忆的活跃程度与时间依据](docs/images/activation-detail.png)
+![Activation weight and its time basis](docs/images/activation-detail.png)
 
 </details>
 
-## 快速开始
+## Quick Start
 
-当前版本为 **0.1.0 预览版**。已验证 Windows 11、Python 3.12/3.13 和 Edge；Linux/macOS 尚未验证。
+This is the **0.1.0 preview release**. Windows 11, Python 3.12/3.13, and Edge have been tested. Linux and macOS have not yet been validated.
 
-在 PowerShell 中运行：
+Run in PowerShell:
 
 ```powershell
 git clone https://github.com/Kreuz-sp/agent-recall-kit.git
@@ -144,84 +143,88 @@ cd agent-recall-kit
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install .
 
-# 创建一份自带虚构资料的数据目录
+# Create a data directory with fictional demo material
 .venv\Scripts\agent-recall-kit.exe init .\my-data --demo
 
-# 从资料建立图谱
+# Build the graph from the source files
 .venv\Scripts\agent-recall-kit.exe --config .\my-data\agent-recall-kit.json build
 
-# 启动本地服务
+# Start the local service
 .venv\Scripts\agent-recall-kit.exe --config .\my-data\agent-recall-kit.json serve --port 18791
 ```
 
-打开 **http://127.0.0.1:18791**，将以下文件中的连接码填入页面：
+Open **http://127.0.0.1:18791** and enter the access code from:
 
 ```text
 my-data/data/runtime/access-token.txt
 ```
 
-服务运行期间保持终端开启，按 `Ctrl+C` 停止。需要后台启停或 Windows 守护任务时，见[运维说明](docs/OPS.md)。
+Keep the terminal open while the service runs; press `Ctrl+C` to stop it. For background operation and an optional Windows scheduled task, see [Operations](docs/OPS.md).
 
-数据与安装目录分开存放：
+Data is stored separately from the installed package:
 
 ```text
 my-data/
-  agent-recall-kit.json   配置
-  library/               Markdown / YAML 原件
-  data/graph/            图谱、人工判断和激活状态
-  data/runtime/          连接码、布局和运行状态
+  agent-recall-kit.json   Configuration
+  library/               Markdown / YAML source files
+  data/graph/            Graph, review decisions, activation state
+  data/runtime/          Access code, layouts, runtime state
 ```
 
-要使用自己的资料，去掉 `--demo` 创建空库，按[数据格式](docs/FORMAT.md)整理文件，并配置适合自己领域的 [profile](docs/PROFILE.md)。修改资料后重新运行 `build`，或在页面点击“重新读取来源”。
+For your own material, omit `--demo`, organize your files according to the [data format](docs/FORMAT.md), and configure a [profile](docs/PROFILE.md) for your domain. After changing source files, run `build` again or use the interface's refresh action.
 
-## 接入 Agent
+The current demo and interface screenshots are in Chinese. This English README does not imply a fully localized English interface.
 
-记忆服务在本地运行，MCP stdio 桥把它提供给宿主。多个宿主可以共用同一服务。
+## Connect an Agent
+
+The memory service runs locally. An MCP stdio bridge exposes it to compatible hosts; multiple hosts can share the same service.
 
 ```text
-Agent / MCP 宿主 → stdio 桥 → 本地记忆服务 → 资料库与关系图
-                                  ↑
-                              浏览器管理界面
+Agent / MCP host → stdio bridge → local memory service → library and graph
+                                         ↑
+                                  browser interface
 ```
 
-在宿主的 MCP 设置中填写命令与参数，使用你自己的绝对路径：
+Set the command and arguments in your host's MCP settings, using your own absolute paths:
 
 ```text
-命令：<仓库路径>/.venv/Scripts/agent-recall-kit-mcp.exe
-参数：--config <数据目录>/agent-recall-kit.json --service http://127.0.0.1:18791
+Command: <repository-path>/.venv/Scripts/agent-recall-kit-mcp.exe
+Arguments: --config <data-directory>/agent-recall-kit.json --service http://127.0.0.1:18791
 ```
 
-| 工具 | 用途 |
+| Tool | Purpose |
 |---|---|
-| `memory_query` | 查找相关记忆、来源和关系路径 |
-| `memory_fetch` | 按单元 ID 与版本读取原文 |
-| `memory_explain` | 查看检索依据 |
-| `memory_health` | 检查连接和服务状态 |
-| `memory_feedback` | 明确反馈某条记忆是否有帮助，写入激活元数据 |
+| `memory_query` | Retrieve memories, citations, and relationship paths |
+| `memory_fetch` | Read original text by unit ID and source version |
+| `memory_explain` | Inspect the retrieval process |
+| `memory_health` | Check connectivity and service status |
+| `memory_feedback` | Explicitly report usefulness and write activation metadata |
 
-完整 JSON 配置见 [MCP 接入说明](adapters/mcp/README.md)。接入与读取已在 DSH、Codex、Cherry Studio 中验证，具体宿主版本和模型需按配置确认。接通 MCP 后由模型或宿主决定何时调用；本版本不附带每轮自动供给。
+See [MCP setup](adapters/mcp/README.md) for JSON configuration. Connectivity and reading have been tested in DSH, Codex, and Cherry Studio; verify your specific host version and model. The model or host decides when to call tools. This release does not include automatic per-turn memory injection.
 
-## 数据由你保管
+## Your Data Stays Under Your Control
 
-- 来源目录只读，图谱、布局、反馈等状态另存。普通经历的淡忘也不会删除原件。
-- 服务默认只监听本机，连接码在本机生成。需要迁移或留副本时，使用[备份与恢复](docs/OPS.md)。
-- 领域别名和证据规则需要自行配置；关系候选需要审核，检索仍可能遗漏或返回不相关资料。
+- Source files are read-only. Graph state, layouts, and feedback are stored separately. Decay does not delete the originals.
+- The service listens on localhost by default and generates its access code locally. See [backup and restore](docs/OPS.md) for moving or preserving your data.
+- Domain aliases and evidence rules need configuration. Relationship proposals require review, and retrieval can still miss relevant material or return irrelevant candidates.
 
-预览版接口和数据格式仍可能变化。同一数据目录多进程写入、其它操作系统和浏览器尚未完整验证，详细边界见[已知限制](docs/LIMITS.md)。
+Preview interfaces and data formats may change. Concurrent writers to the same data directory, other operating systems, and other browsers have not been fully validated. See [Known limitations](docs/LIMITS.md).
 
-## 文档
+## Documentation
 
-| 文档 | 内容 |
+The detailed documents below are currently in Chinese.
+
+| Document | Contents |
 |---|---|
-| [数据格式](docs/FORMAT.md) | 资料如何组织、来源单元与版本 |
-| [领域配置](docs/PROFILE.md) | 对象别名、目标字段、检索与证据规则 |
-| [HTTP API](docs/API.md) | 查询、图谱、反馈与错误码 |
-| [MCP 接入](adapters/mcp/README.md) | 命令、参数和工具说明 |
-| [运维](docs/OPS.md) | 启停、体检、备份、恢复与守护 |
-| [已知限制](docs/LIMITS.md) | 当前已验证范围与未实现部分 |
+| [Data format](docs/FORMAT.md) | Source organization, units, and versions |
+| [Domain profiles](docs/PROFILE.md) | Aliases, target fields, retrieval, and evidence rules |
+| [HTTP API](docs/API.md) | Queries, graph operations, feedback, and errors |
+| [MCP setup](adapters/mcp/README.md) | Commands, arguments, and tools |
+| [Operations](docs/OPS.md) | Service control, diagnostics, backups, recovery, and supervision |
+| [Known limitations](docs/LIMITS.md) | Tested scope and current gaps |
 
-## 许可
+## License
 
 [MIT](LICENSE) · Copyright © 2026 Kreuz-sp
 
-Python 内部导入名仍为 `she_memory`；安装包名与命令前缀为 `agent-recall-kit`。
+The internal Python import name remains `she_memory`. The distribution name and command prefix are `agent-recall-kit`.

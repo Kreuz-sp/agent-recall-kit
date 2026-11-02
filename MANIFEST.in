@@ -1,4 +1,4 @@
-include README.md LICENSE pyproject.toml
+include README.md README.zh-CN.md LICENSE pyproject.toml
 recursive-include src/she_memory/web *.js *.html *.css
 prune examples/demo-data
 prune examples/*/data
