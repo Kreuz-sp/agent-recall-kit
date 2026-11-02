@@ -1,0 +1,31 @@
+[
+ {
+  "id": "valve",
+  "name": "滴灌阀",
+  "kind": "object",
+  "aliases": [
+   "滴灌阀",
+   "阀门",
+   "阀组"
+  ]
+ },
+ {
+  "id": "controller",
+  "name": "控制器",
+  "kind": "object",
+  "aliases": [
+   "控制器",
+   "TR-7",
+   "固件"
+  ]
+ },
+ {
+  "id": "sensor",
+  "name": "土壤传感器",
+  "kind": "object",
+  "aliases": [
+   "传感器",
+   "探头"
+  ]
+ }
+]

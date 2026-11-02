@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>She · 记忆图谱</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header><div><span class="eyebrow">SHE / MEMORY LAB</span><h1>记忆之间，有迹可循。</h1><p>保存来源，整理联系，让经验在下一次被找到。</p></div><div class="badge" id="status">尚未连接</div></header>
+<section class="connect" id="connection"><label>本机连接码 <input id="token" type="password" placeholder="读取启动窗口指向的 access-token.txt" autocomplete="off"></label><button id="connect">连接记忆服务</button><span>连接码只保存在当前页面内存。</span></section>
+<main>
+<aside class="left">
+  <div class="section-label">寻找记忆</div>
+  <textarea id="question" rows="2" placeholder="例如：显示器到货验什么"></textarea>
+  <button id="query">沿关系查找</button>
+  <div class="chips"><button data-query="显示器到货验什么">显示器验收</button><button data-query="银行卡到了没">银行卡状态</button><button data-query="中文替换怎么处理">编码经验</button></div>
+
+  <div class="section-label">定位节点</div>
+  <div class="search-row"><input id="search" placeholder="实体名 / 文档路径 / 完整标签"><button id="search-go">定位</button></div>
+  <div id="search-hits" class="hits"></div>
+
+  <div class="section-label">视图</div>
+  <div class="seg" id="mode-switch"><button data-mode="overview" class="on">全库总览</button><button data-mode="local">主题局部</button></div>
+  <p class="hint" id="scope-hint">连接后默认全库总览。</p>
+
+  <div class="section-label">类型筛选 <span id="filter-state" class="hint"></span></div>
+  <div id="filters" class="filters hint">连接后可筛选</div>
+  <button class="secondary" id="filter-clear">清除筛选</button>
+
+  <div class="section-label">关系候选 <span id="cand-meta" class="hint"></span></div>
+  <div class="seg" id="cand-filter"><button data-cand="candidate" class="on">待审</button><button data-cand="accepted">已接受</button><button data-cand="rejected">已拒绝</button><button data-cand="all">全部</button></div>
+  <div id="candidates" class="cands"><p class="hint">连接后查看。</p></div>
+  <div class="pager"><button id="cand-prev" class="secondary">上一页</button><span id="cand-page" class="hint"></span><button id="cand-next" class="secondary">下一页</button></div>
+</aside>
+
+<section class="canvas-panel">
+  <div class="toolbar">
+    <span id="graph-meta">持久图 · 尚未读取</span>
+    <span id="coverage" class="hint"></span>
+    <button class="secondary" id="fit">适应画布</button>
+    <button class="secondary" id="save-layout">保存布局</button>
+    <button class="secondary" id="refresh">重新读取来源</button>
+  </div>
+  <svg id="canvas" aria-label="记忆关联图"><g id="viewport"><g id="edges"></g><g id="nodes"></g><g id="labels"></g></g></svg>
+  <div class="legend"><span>● 对象</span><span>○ 来源单元</span><span>— 已发布关联</span><span>┄ 已停用</span><span id="visible-count"></span><span id="zoom-hud">100%</span></div>
+  <div id="notice" role="status">尚未连接。连接后默认显示全库总览。</div>
+</section>
+
+<aside class="details">
+  <div class="section-label">来源与路径</div>
+  <h2 id="detail-title">从一个节点开始</h2>
+  <p id="detail-meta" class="hint">图在查询前已经存在。查询会高亮本次使用的路径。</p>
+  <div class="actions"><button class="secondary" id="set-from">设为连线起点</button><button class="secondary" id="link-to">关联到当前节点</button><button class="secondary" id="edge-action">停用 / 恢复所选线</button></div>
+  <p id="link-state" class="hint"></p>
+  <pre id="detail-body">原文会显示在这里。</pre>
+  <div id="results"></div>
+</aside>
+</main>
+<footer>Memory Brain 0.1 · 图书馆与索引员 · 不承担聊天人格或自动执行</footer>
+<script src="/app.js"></script></body></html>

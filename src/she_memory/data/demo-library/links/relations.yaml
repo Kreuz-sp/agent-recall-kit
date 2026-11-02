@@ -1,0 +1,12 @@
+relations:
+  - id: grp-valve-field
+    key: valve-field-2026
+    label: 阀门现场记录
+    kind: topic
+    sources:
+      - path: entries/2026-05-01-drip-valve-replacement.md
+        line: 3
+        quote: 今天把 3 号滴灌阀换掉了
+      - path: experience/valve-sticking.md
+        line: 3
+        quote: 低温环境下阀门偶发卡涩

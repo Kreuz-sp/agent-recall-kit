@@ -1,0 +1,5 @@
+inventory:
+  spare_valves: 2
+  spare_sensors: 4
+  controller_backup: 是
+  last_check: 2026-05-31

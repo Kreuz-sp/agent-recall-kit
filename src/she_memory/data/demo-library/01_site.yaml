@@ -1,0 +1,21 @@
+site:
+  name: 晨雾温室
+  location: 北侧试验区
+valve:
+  model: DV-12
+  installed: 2026-05-01
+  count: 3
+  verify:
+    - 关闭主阀，确认压力表归零
+    - 手动开关三次，确认无卡涩
+    - 回读控制器日志，确认动作计数增加
+  note: 3 号阀在低温下偶发卡涩
+controller:
+  model: TR-7
+  firmware: 2.4.1
+  installed: 2026-05-20
+  note: 升级后需要重新登记传感器地址
+sensor:
+  type: 土壤湿度
+  count: 6
+  calibration: 2026-05-18

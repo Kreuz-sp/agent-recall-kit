@@ -1,0 +1,157 @@
+{
+ "schema_version": 1,
+ "name": "demo-greenhouse",
+ "description": "演示用领域包：滴灌阀/控制器/传感器。只对演示库成立，换成你自己的领域时请改写或使用空 profile。",
+ "objects": [
+  {
+   "id": "valve",
+   "pattern": "滴灌阀|阀门|阀组",
+   "words": [
+    "滴灌阀",
+    "阀门",
+    "阀组"
+   ]
+  },
+  {
+   "id": "controller",
+   "pattern": "控制器|TR-7|固件",
+   "words": [
+    "控制器",
+    "TR-7",
+    "固件"
+   ]
+  },
+  {
+   "id": "sensor",
+   "pattern": "土壤传感器|传感器|探头",
+   "words": [
+    "传感器",
+    "探头"
+   ]
+  }
+ ],
+ "targets": [
+  {
+   "id": "verify",
+   "pattern": "验收|检查|要验",
+   "locator_pattern": "(^|/)verify",
+   "words": [
+    "验收",
+    "检查"
+   ]
+  },
+  {
+   "id": "model",
+   "pattern": "型号|版本号|固件版本|什么型号",
+   "locator_pattern": "(^|/)(model|firmware|version)",
+   "words": [
+    "型号",
+    "版本"
+   ]
+  },
+  {
+   "id": "method",
+   "pattern": "怎么|如何|步骤|排查",
+   "locator_pattern": null,
+   "words": []
+  }
+ ],
+ "hints": {
+  "navigation": "待办|未完成|没做完|承诺|答应|约定",
+  "threads": "待办|未完成|没做完",
+  "promises": "承诺|答应|约定",
+  "focus_only": "^(那|这)?(个)?呢[？?]?$",
+  "fact": "型号|版本|多少|几个|现在",
+  "procedure": "怎么|如何|步骤|排查|怎么办",
+  "history": "当时|那次|上次|之前怎么",
+  "echo": "检索命中|词面命中"
+ },
+ "stop_words": [
+  "今天",
+  "明天",
+  "现在",
+  "有没有",
+  "怎么",
+  "如何"
+ ],
+ "scoring": {
+  "min_score": 2.0,
+  "graph_only_base": 2.5,
+  "lead_ratio": 1.15,
+  "tie_ratio": 0.98,
+  "target_bonus": 2.2,
+  "device_bonus": 1.5,
+  "focus_bonus": 2.0,
+  "kind_bonus": {
+   "fact": 1.35,
+   "knowledge": 1.15,
+   "experience": 1.15
+  },
+  "locator_bonuses": [
+   {
+    "pattern": "(^|/)note",
+    "factor": 0.8
+   }
+  ],
+  "procedure_body_bonus": 0.2,
+  "procedure_verifiable_pattern": "回读|确认|核对|检查",
+  "procedure_verifiable_bonus": 1.3,
+  "verbatim_min_chars": 6,
+  "verbatim_penalty": 0.4,
+  "echo_penalty": 0.6
+ },
+ "format": {
+  "root_files": [
+   "profile.md",
+   "open-threads.md",
+   "promises.md"
+  ],
+  "dirs": [
+   "entries",
+   "knowledge",
+   "experience",
+   "links"
+  ],
+  "key_aliases": {
+   "valve": "阀门 滴灌阀",
+   "controller": "控制器 固件",
+   "sensor": "传感器 探头",
+   "verify": "验收 检查",
+   "model": "型号 版本"
+  },
+  "max_files": 2500,
+  "max_bytes": 1048576
+ },
+ "navigation": {
+  "threads_file": "open-threads.md",
+  "promises_file": "promises.md"
+ },
+ "candidate": {
+  "stop_words": [
+   "上午",
+   "下午",
+   "总结",
+   "记录"
+  ],
+  "max_candidates": 200,
+  "max_units_per_object": 60,
+  "rule": "shared-object-and-title/v1"
+ },
+ "evidence": {
+  "marks": {
+   "has_method": "步骤|方法|做法|排查顺序",
+   "has_verify": "验收|检查|回读",
+   "has_state": "已更换|已恢复|完成|通过"
+  },
+  "rules": [
+   {
+    "code": "method_steps",
+    "when_target": "method",
+    "unless_history": true,
+    "require": [
+     "has_method"
+    ]
+   }
+  ]
+ }
+}

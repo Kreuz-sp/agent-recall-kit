@@ -1,0 +1,9 @@
+{
+ "mode": "source-readonly",
+ "memory_root": "../demo-library",
+ "state_root": "../demo-data/graph",
+ "view_root": "../demo-data/runtime",
+ "entities_file": "../demo-library/entities.json",
+ "profile_file": "./profile-demo.json",
+ "roles_file": ""
+}

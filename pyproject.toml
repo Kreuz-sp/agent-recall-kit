@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "she-memory"
+version = "0.1.0"
+description = "Local, traceable memory service: source-of-truth library, graph navigation, review workflow, MCP bridge."
+readme = "README.md"
+requires-python = ">=3.10"
+# ⚠️ 许可证与署名是发布决策，尚未定；LICENSE 是占位文本，不能当成已选定。
+authors = [{name = "TBD"}]
+license-files = ["LICENSE"]
+keywords = ["memory", "knowledge-graph", "local-first", "mcp"]
+classifiers = [
+  "Environment :: Console",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+]
+dependencies = ["PyYAML>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "build>=1.2"]
+
+[project.scripts]
+she-memory = "she_memory.cli:main"
+she-memory-ctl = "she_memory.tools.memctl:main"
+she-memory-doctor = "she_memory.tools.doctor:main"
+she-memory-backup = "she_memory.tools.backup:main"
+she-memory-mcp = "she_memory.tools.mcp_stdio:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+she_memory = [
+  "web/*.js", "web/*.html", "web/*.css",
+  "data/*.json",
+  "data/demo-library/*.md", "data/demo-library/*.yaml", "data/demo-library/*.json",
+  "data/demo-library/*/*.md", "data/demo-library/*/*.yaml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
