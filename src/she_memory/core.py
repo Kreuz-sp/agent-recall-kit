@@ -256,7 +256,7 @@ class Brain:
                 result = {'candidate_id': candidate['id']}
             else:
                 raise MemoryErrorCode('not_supported')
-            data['nodes'], data['edges'], data['candidates'], _report = assemble(self.config, data['units'], self.entities, data, self.profile)
+            data['nodes'], data['edges'], data['candidates'], _assembly_report = assemble(self.config, data['units'], self.entities, data, self.profile)
             return result
         signature = action + ':' + digest(payload)
         return self.store.mutate(expected_revision, key, signature, change)

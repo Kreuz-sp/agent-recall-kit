@@ -1,11 +1,11 @@
-# She 记忆大脑（工作名 · 发布候选 0.1.0）
+# she-memory 0.1.0（预览版）
 
 本地、可追溯的记忆服务预览版：把你的 Markdown/YAML 资料读成一张**带来源**的图，
 在浏览器里全库浏览、按关系检索、逐条审核自动生成的关系候选；
 程序只读你的原件，人工决定单独存放，可导出备份。
 
-> **状态**：发布候选（RC），尚未发布。项目名、署名、许可证、仓库可见性由项目所有者决定，
-> 本文与 `LICENSE` 里的占位**不是最终决定**。预览版本号 `0.1.0` 与包元数据一致。
+> **状态**：预览版（0.1.0），接口与数据格式仍可能变化。
+> 许可证 MIT，署名见 `LICENSE` 与 `pyproject.toml`。
 
 **它不做什么**：不自带任何人格或聊天助手；不声称"任意问法都能准确召回"；
 不把可编辑关系图说成神经网络或意识；不改写你的记忆原件。
@@ -31,31 +31,36 @@
 
 演示库是**纯虚构**的（人物、项目、设备、日期都是编的），见 `examples/demo-library/`。
 
-## 五分钟快速开始（Windows，实测）
+## 五分钟快速开始（Windows，实测 Py3.12/3.13）
 
 ```powershell
-# 1) 装
+# 1) 装（在仓库根目录运行）
 python -m venv .venv
 .venv\Scripts\activate
-pip install she_memory-0.1.0-py3-none-any.whl      # 或 pip install .
+python -m pip install .
+# 也可以先打包再装 wheel：python -m pip install build; python -m build; pip install dist\she_memory-0.1.0-py3-none-any.whl
 
-# 2) 建数据目录（配置、图状态、连接码都放这里，不写源码树）
-she-memory init .\my-data
+# 2) 建数据目录，直接带虚构演示库（配置、图状态、连接码都放这里，不写源码树）
+she-memory init .\my-data --demo
+# 生成的结构：
+#   my-data\she-memory.json     ← 配置（memory_root/profile/state_root/view_root 都在这里）
+#   my-data\library\            ← 资料目录（演示库写在这里）
+#   my-data\data\graph\         ← 图快照（state_root）
+#   my-data\data\runtime\       ← 连接码、布局、日志（view_root）
 
-# 3) 想先看演示：把虚构演示库和示例 profile 拷进去
-copy examples\demo-library\* .\my-data\library\ -Recurse
-copy examples\config\profile-demo.json .\my-data\profile.json
-
-# 4) 建图（唯一写图的入口）
+# 3) 建图（唯一写图的入口）
 she-memory --config .\my-data\she-memory.json build
 # {"revision": 1, "units": 39, "nodes": 54, "edges": 75}
 
-# 5) 启动（只监听 127.0.0.1；首次启动生成连接码）
+# 4) 启动（只监听 127.0.0.1；首次启动生成连接码）
 she-memory --config .\my-data\she-memory.json serve --port 18791
 
-# 6) 浏览器打开 http://127.0.0.1:18791
+# 5) 浏览器打开 http://127.0.0.1:18791
 #    连接码在 .\my-data\data\runtime\access-token.txt
 ```
+
+用自己的资料时，跳过 `--demo`：`she-memory init .\my-data` 会建空库骨架，
+再把你的 Markdown/YAML 放进 `my-data\library\`，然后跑 `build`。
 
 命令行也能用：
 
@@ -70,10 +75,11 @@ she-memory-doctor --config .\my-data\she-memory.json
 
 | 项 | 实测 |
 |---|---|
-| 平台 | Windows 11（本机），Python 3.13.15 |
+| 平台 | Windows 11（本机）；Python **3.12.10** 与 **3.13.15** 各自全新 venv 装 wheel 跑通 |
+| 最低版本 | `requires-python = ">=3.12"`；3.10/3.11 **未验证**，不承诺可用 |
 | 浏览器 | Microsoft Edge 156（headless 实跑：加载、缩放、拖拽、搜索、候选对照） |
 | 安装 | 全新 venv + 安装 wheel，数据目录在 `%TEMP%` 下，与作者环境无引用 |
-| 规模 | 演示库 54 节点；合成大图 3000 节点（`examples/generate_synthetic.py`） |
+| 规模 | 演示库 54 节点；合成大图约 2600 节点（`examples/generate_synthetic.py`） |
 | 未验 | Linux/macOS 安装、非 Edge 浏览器、多进程同时写同一数据目录 |
 
 ## 目录结构
@@ -101,7 +107,10 @@ docs/                  格式、profile、接口、运维、限制
 - 来源为**只读**：所有写操作只落在数据目录的图快照/布局文件里。
 - 端口独占只保证"同一端口只有一个服务"；**不代表**同一数据目录可以被多个进程同时写——这一点未验证，见 `docs/LIMITS.md`。
 
-## 待项目所有者决定
+## 许可与出处
 
-项目名、署名（作者/组织）、版本号策略、许可证（建议 MIT）、仓库可见性（先私有→何时公开）。
-本仓库的 `LICENSE`、`pyproject.toml` 的 `name/authors/license` 都是占位。
+MIT，见 `LICENSE`（Copyright © 2026 Kreuz-sp）。版本号以 `pyproject.toml` 为准，
+源码、包元数据、构建产物与本文保持一致（0.1.0，预览版）。
+
+首发范围保持精简：**不含**经验草稿工具（`experience`）、一次性迁移脚本，
+也**不含** DSH/Codex 的每轮自动供给——这些暂未纳入，不承诺时间。
