@@ -67,12 +67,13 @@
 
 ## 淡忘与再激活的边界（本版）
 
-- 衰减只作用于 kind=entry；act/knowledge/experience/thread_row 等默认受保护，pin 之后一律不衰减。
-- 权重公式是产品初始值（half_life=90 天、loor=0.35），不是认知科学结论；可在 profile 的 ctivation 里改。
+- 衰减只作用于 kind=entry；fact/knowledge/experience/thread_row 等默认受保护，pin 之后一律不衰减。
+- 权重公式是产品初始值（half_life=90 天、floor=0.35；演示 profile 为了让效果可见用 60 天），
+  不是认知科学结论；可在 profile 的 activation 里改。
 - 时间依据只认：显式元数据 → 文件名/标题解析出的日期 → 首次入库；**不使用文件 mtime**。
   没有历史时间的新导入单元按首次入库计算，不补造久远时间。
-- 衰减只改**同层内**顺序，不改变 ok/ambiguous/insufficient/no_match 的判定，也不会消解歧义。
-- 只有 helpful 会重新活跃；
-ot_helpful 只记录。query/fetch/预览/点击都不会自动强化。
+- 衰减只改**同层内**顺序（三层是相对**本次最高分**的 90% / 60% 划分，不是绝对相关度阈值），
+  不改变 ok/ambiguous/insufficient/no_match 的判定，也不会消解歧义。
+- 只有 helpful 会重新活跃；not_helpful 只记录。query/fetch/预览/点击都不会自动强化。
 - 未完成事项不按年龄结案；被新事实替代/撤回/删除属于另外的状态，本版没有合并实现。
 - 没有自动清理孤立元数据；unit 消失后它的激活记录留在快照里，不会被悄悄绑到相似标题上。

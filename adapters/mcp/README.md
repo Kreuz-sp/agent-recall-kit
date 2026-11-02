@@ -61,9 +61,7 @@ memory_feedback 记录一次**明确的使用反馈**，写的是项目侧元数
 | unit_id | 哪个单元 |
 | expected_source_version | 当前版本（对不上会被拒） |
 | event_id | 事件 id（重放不重复写） |
-| 
-esult | helpful 或 
-ot_helpful |
+| result | helpful 或 not_helpful |
 | expected_revision | 当前图版本（并发保护） |
 
 约定：只有调用者**确实得到结果反馈且获准**时才调用；不要求每次 query 后自动报 helpful；

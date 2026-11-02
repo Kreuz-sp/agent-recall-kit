@@ -65,9 +65,7 @@ partial=false, coverage, nodes, edges, candidates, candidate_meta`。
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| POST | /v1/feedback | {unit_id, expected_source_version, event_id, result, expected_revision, idempotency_key?}；
-esult 只能是 helpful / 
-ot_helpful |
+| POST | /v1/feedback | {unit_id, expected_source_version, event_id, result, expected_revision, idempotency_key?}；result 只能是 helpful / not_helpful |
 | POST | /v1/graph/edit | action 新增 pin / unpin，payload {unit_id}（仍需 expected_revision） |
 
 /v1/feedback 的行为契约：
@@ -76,12 +74,10 @@ ot_helpful |
 - event_id 绑定完整语义载荷 (unit_id, source_version, result)：**完全相同**才算重放，返回原结果（deduplicated=true）且**不推进 revision**；
   同 ID 不同载荷 → 409 idempotency_conflict（不会把两条记录的字段拼在一起）；旧元数据没有语义指纹时同样保守拒绝；
 - 同一单元同一 UTC 日最多有效强化一次；同日第二次 helpful 返回 effective=false；
-- 
-ot_helpful 只记录，不降权；
+- not_helpful 只记录，不降权；
 - 不接受调用方传时间，因此不可能写入未来激活时间；不保存问句/聊天/模型正文；
-- expected_revision 不符 → 409 
-evision_conflict。
+- expected_revision 不符 → 409 revision_conflict。
 
-/v1/fetch 的返回多一个 ctivation 字段：weight / time_basis / age_days / pinned / protected / last_helpful_at / time_note。
-/v1/graph/view 多一个顶层 ctivation：{enabled, units: {unit_id: 同上}}，界面用它调透明度（不删任何节点）。
-/v1/query 的每个返回项也带 ctivation（含 ypass 原因），顶层 ctivation 给出 policy、层级、decay 计数与 ypass。
+/v1/fetch 的返回多一个 activation 字段：weight / time_basis / age_days / pinned / protected / last_helpful_at / time_note。
+/v1/graph/view 多一个顶层 activation：{enabled, units: {unit_id: 同上}}，界面用它调透明度（不删任何节点）。
+/v1/query 的每个返回项也带 activation（含 bypass 原因），顶层 activation 给出 policy、层级、decay 计数与 bypass。
