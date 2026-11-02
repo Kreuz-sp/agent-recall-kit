@@ -4,7 +4,7 @@
 由配置里的 `profile_file` 指向。换领域 = 换 profile（或干脆用空的 starter），不需要改代码。
 
 - 没有配置 `profile_file` → 使用 `STARTER`：对象表为空，检索只靠**词面 + 图可达性**，不假装懂你的领域。
-- `she-memory init` 会把 `STARTER` 写到数据目录，作为起点。
+- `agent-recall-kit init` 会把 `STARTER` 写到数据目录，作为起点。
 
 ## 字段
 
@@ -77,7 +77,7 @@
 1. 从 `examples/config/profile-demo.json` 复制一份；
 2. 只写你库里**真的存在**的对象与字段（宁少勿多，别写"可能有人这么问"的词）；
 3. `pattern` 是 Python 正则、大小写不敏感；`words` 是被并入查询词的词面扩写；
-4. 先跑 `she-memory --config ... query "..."` 看状态与命中，再决定阈值；
+4. 先跑 `agent-recall-kit --config ... query "..."` 看状态与命中，再决定阈值；
 5. 不写代码：改 profile → 重启服务（或重新 `build` 后刷新页面）即可。
 
 > 约定：profile 是**规则**，不是记忆；不要把它当作资料库来用。

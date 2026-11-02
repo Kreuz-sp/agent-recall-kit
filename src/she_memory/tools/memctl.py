@@ -330,9 +330,9 @@ def cmd_ensure(ctx):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="she-memory-ctl", description="记忆服务运行入口")
+    parser = argparse.ArgumentParser(prog="agent-recall-kit-ctl", description="记忆服务运行入口")
     parser.add_argument("action", choices=["start", "stop", "status", "restart", "ensure"])
-    parser.add_argument("--config", required=True, help="she-memory.json 路径")
+    parser.add_argument("--config", required=True, help="agent-recall-kit.json 路径")
     parser.add_argument("--port", type=int, help="覆盖配置里的端口")
     args = parser.parse_args(argv)
     ctx = Ctx(args.config, args.port)

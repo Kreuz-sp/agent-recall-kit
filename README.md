@@ -1,4 +1,6 @@
-# she-memory 0.1.0（预览版）
+# Agent Recall Kit
+
+本地、可追溯的 Agent 记忆工具包 · 0.1.0 预览版
 
 本地、可追溯的记忆服务预览版：把你的 Markdown/YAML 资料读成一张**带来源**的图，
 在浏览器里全库浏览、按关系检索、逐条审核自动生成的关系候选；
@@ -11,6 +13,16 @@
 不把可编辑关系图说成神经网络或意识；不改写你的记忆原件。
 
 ---
+
+
+## 从一点联系，到一张记忆网络
+
+[![观看 20 秒记忆生长演示](docs/media/recall-growth-poster.jpg)](docs/media/recall-growth.mp4)
+
+[观看 / 下载演示视频（20 秒 · 1080p · 无声）](docs/media/recall-growth.mp4)
+
+白底、黑点、细线，从稀疏联系逐渐长成复杂网络。**不展示节点标识、标题或记忆正文**，仅呈现约 2800 个节点、4800 条关系的规模与形态；生长顺序为示意编排，并非历史录像。下方截图则来自本仓库的虚构演示库，两者来源不同。
+
 
 ## 它解决什么
 
@@ -38,37 +50,37 @@
 python -m venv .venv
 .venv\Scripts\activate
 python -m pip install .
-# 也可以先打包再装 wheel：python -m pip install build; python -m build; pip install dist\she_memory-0.1.0-py3-none-any.whl
+# 也可以先打包再装 wheel：python -m pip install build; python -m build; pip install dist\agent_recall_kit-0.1.0-py3-none-any.whl
 
 # 2) 建数据目录，直接带虚构演示库（配置、图状态、连接码都放这里，不写源码树）
-she-memory init .\my-data --demo
+agent-recall-kit init .\my-data --demo
 # 生成的结构：
-#   my-data\she-memory.json     ← 配置（memory_root/profile/state_root/view_root 都在这里）
+#   my-data\agent-recall-kit.json     ← 配置（memory_root/profile/state_root/view_root 都在这里）
 #   my-data\library\            ← 资料目录（演示库写在这里）
 #   my-data\data\graph\         ← 图快照（state_root）
 #   my-data\data\runtime\       ← 连接码、布局、日志（view_root）
 
 # 3) 建图（唯一写图的入口）
-she-memory --config .\my-data\she-memory.json build
+agent-recall-kit --config .\my-data\agent-recall-kit.json build
 # {"revision": 1, "units": 39, "nodes": 54, "edges": 75}
 
 # 4) 启动（只监听 127.0.0.1；首次启动生成连接码）
-she-memory --config .\my-data\she-memory.json serve --port 18791
+agent-recall-kit --config .\my-data\agent-recall-kit.json serve --port 18791
 
 # 5) 浏览器打开 http://127.0.0.1:18791
 #    连接码在 .\my-data\data\runtime\access-token.txt
 ```
 
-用自己的资料时，跳过 `--demo`：`she-memory init .\my-data` 会建空库骨架，
+用自己的资料时，跳过 `--demo`：`agent-recall-kit init .\my-data` 会建空库骨架，
 再把你的 Markdown/YAML 放进 `my-data\library\`，然后跑 `build`。
 
 命令行也能用：
 
 ```powershell
-she-memory --config .\my-data\she-memory.json query "滴灌阀 型号"
-she-memory --config .\my-data\she-memory.json fetch --unit unit:... --version <sha256>
-she-memory-ctl --config .\my-data\she-memory.json status
-she-memory-doctor --config .\my-data\she-memory.json
+agent-recall-kit --config .\my-data\agent-recall-kit.json query "滴灌阀 型号"
+agent-recall-kit --config .\my-data\agent-recall-kit.json fetch --unit unit:... --version <sha256>
+agent-recall-kit-ctl --config .\my-data\agent-recall-kit.json status
+agent-recall-kit-doctor --config .\my-data\agent-recall-kit.json
 ```
 
 ## 已验证环境

@@ -3,7 +3,7 @@ requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "she-memory"
+name = "agent-recall-kit"
 version = "0.1.0"
 description = "Local, traceable memory service: source-of-truth library, graph navigation, review workflow, MCP bridge."
 readme = "README.md"
@@ -26,11 +26,11 @@ dependencies = ["PyYAML>=6.0"]
 dev = ["pytest>=8.0", "build>=1.2"]
 
 [project.scripts]
-she-memory = "she_memory.cli:main"
-she-memory-ctl = "she_memory.tools.memctl:main"
-she-memory-doctor = "she_memory.tools.doctor:main"
-she-memory-backup = "she_memory.tools.backup:main"
-she-memory-mcp = "she_memory.tools.mcp_stdio:main"
+agent-recall-kit = "she_memory.cli:main"
+agent-recall-kit-ctl = "she_memory.tools.memctl:main"
+agent-recall-kit-doctor = "she_memory.tools.doctor:main"
+agent-recall-kit-backup = "she_memory.tools.backup:main"
+agent-recall-kit-mcp = "she_memory.tools.mcp_stdio:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

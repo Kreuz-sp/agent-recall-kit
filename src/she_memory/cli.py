@@ -48,7 +48,7 @@ def cmd_init(args):
         _write_json(entities, json.loads((library / "entities.json").read_text(encoding="utf-8")))
     elif not profile.exists():
         profile.write_text(json.dumps(STARTER, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    config = data_dir / "she-memory.json"
+    config = data_dir / "agent-recall-kit.json"
     if not config.exists():
         _write_json(config, {
             "mode": "source-readonly",
@@ -111,8 +111,8 @@ def cmd_serve(args):
 
 def main(argv=None):
     base = argparse.ArgumentParser(add_help=False)
-    base.add_argument("--config", default=argparse.SUPPRESS, help="配置文件路径（init 生成的 she-memory.json）；放在子命令前后都行")
-    parser = argparse.ArgumentParser(prog="she-memory", parents=[base], description="本地记忆服务：图谱、检索、只读来源")
+    base.add_argument("--config", default=argparse.SUPPRESS, help="配置文件路径（init 生成的 agent-recall-kit.json）；放在子命令前后都行")
+    parser = argparse.ArgumentParser(prog="agent-recall-kit", parents=[base], description="本地记忆服务：图谱、检索、只读来源")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_init = sub.add_parser("init", help="在指定目录生成最小配置与空库骨架")
@@ -147,7 +147,7 @@ def main(argv=None):
     config = getattr(args, "config", None)
     args.config = config
     if args.command != "init" and not config:
-        parser.error("需要 --config <she-memory.json>（或用 init 生成一份）")
+        parser.error("需要 --config <agent-recall-kit.json>（或用 init 生成一份）")
     try:
         return args.func(args)
     except MemoryErrorCode as exc:

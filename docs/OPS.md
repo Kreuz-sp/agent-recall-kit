@@ -4,21 +4,21 @@
 
 | 东西 | 位置 |
 |---|---|
-| 配置文件 | 你给 `she-memory --config <path>` 的那个 JSON |
+| 配置文件 | 你给 `agent-recall-kit --config <path>` 的那个 JSON |
 | 图快照 / 人工决定 | 配置里的 `state_root`（`CURRENT.json` + `snapshots/N.json`） |
 | 连接码 / 布局 / 日志 / pid 记录 | 配置里的 `view_root` |
-| 备份 | `she-memory-backup create --out <dir>` 指定的目录 |
+| 备份 | `agent-recall-kit-backup create --out <dir>` 指定的目录 |
 
 程序不会往源码树/包安装目录写任何运行状态。
 
 ## 启停
 
 ```powershell
-she-memory --config .\my-data\she-memory.json serve --port 18791   # 前台
-she-memory-ctl --config .\my-data\she-memory.json start            # 后台（脱离终端）
-she-memory-ctl --config .\my-data\she-memory.json status
-she-memory-ctl --config .\my-data\she-memory.json stop
-she-memory-ctl --config .\my-data\she-memory.json ensure           # 巡检：在跑就不动，没跑才拉起
+agent-recall-kit --config .\my-data\agent-recall-kit.json serve --port 18791   # 前台
+agent-recall-kit-ctl --config .\my-data\agent-recall-kit.json start            # 后台（脱离终端）
+agent-recall-kit-ctl --config .\my-data\agent-recall-kit.json status
+agent-recall-kit-ctl --config .\my-data\agent-recall-kit.json stop
+agent-recall-kit-ctl --config .\my-data\agent-recall-kit.json ensure           # 巡检：在跑就不动，没跑才拉起
 ```
 
 - 同一端口**只有一个**实例（第二个进程会 bind 失败并退出，不会进服务循环）。
@@ -28,7 +28,7 @@ she-memory-ctl --config .\my-data\she-memory.json ensure           # 巡检：�
 ## 体检
 
 ```powershell
-she-memory-doctor --config .\my-data\she-memory.json
+agent-recall-kit-doctor --config .\my-data\agent-recall-kit.json
 ```
 
 检查：配置可读、来源目录存在、profile 可用、图是否已建、解析是否 0 错误、连接码是否已生成。只读，不改任何文件。
@@ -36,9 +36,9 @@ she-memory-doctor --config .\my-data\she-memory.json
 ## 备份 / 校验 / 隔离恢复
 
 ```powershell
-she-memory-backup create --config .\my-data\she-memory.json --out .\backups
-she-memory-backup verify --archive .\backups\she-memory-backup-*.zip
-she-memory-backup restore --archive .\backups\....zip --to .\restored-copy
+agent-recall-kit-backup create --config .\my-data\agent-recall-kit.json --out .\backups
+agent-recall-kit-backup verify --archive .\backups\agent-recall-kit-backup-*.zip
+agent-recall-kit-backup restore --archive .\backups\....zip --to .\restored-copy
 ```
 
 备份里装：图快照、布局、配置副本（**不含**连接码）、逐项 sha256 的 `manifest.json`。
@@ -55,11 +55,11 @@ she-memory-backup restore --archive .\backups\....zip --to .\restored-copy
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File adapters\windows\guard_task.ps1 `
-  -Action Install -ConfigPath D:\my-data\she-memory.json -EveryMinutes 10
+  -Action Install -ConfigPath D:\my-data\agent-recall-kit.json -EveryMinutes 10
 powershell -NoProfile -ExecutionPolicy Bypass -File adapters\windows\guard_task.ps1 -Action Remove
 ```
 
-它做两件事：每 N 分钟跑一次 `she-memory-ctl ensure`（`IgnoreNew`，不重叠）。删除任务不会停掉正在跑的服务。
+它做两件事：每 N 分钟跑一次 `agent-recall-kit-ctl ensure`（`IgnoreNew`，不重叠）。删除任务不会停掉正在跑的服务。
 不装它也能用，只是服务挂了要手动 `start`。
 
 ## 升级

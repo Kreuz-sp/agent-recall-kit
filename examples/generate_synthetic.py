@@ -4,7 +4,7 @@
 
 用法：
   python examples/generate_synthetic.py --out D:\tmp\synthetic --entries 1200
-  # 然后用 she-memory init 建配置，把 memory_root 指向 <out>/library，再 build
+  # 然后用 agent-recall-kit init 建配置，把 memory_root 指向 <out>/library，再 build
 """
 import argparse
 import json

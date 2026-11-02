@@ -13,7 +13,7 @@
   · 工具结果里的 isError（业务失败：not_found / source_changed / service_unavailable）
 
 启动：
-    she-memory-mcp --config <数据目录>/she-memory.json --service http://127.0.0.1:18791
+    agent-recall-kit-mcp --config <数据目录>/agent-recall-kit.json --service http://127.0.0.1:18791
 """
 
 import argparse
@@ -25,7 +25,7 @@ from pathlib import Path
 
 PROTOCOL = "2025-06-18"
 from she_memory import __version__  # noqa: E402
-SERVER_INFO = {"name": "she-memory", "version": __version__}
+SERVER_INFO = {"name": "agent-recall-kit", "version": __version__}
 
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600
@@ -183,7 +183,7 @@ def handle_tools_call(service, mid, params):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--config", required=True, help="she-memory.json（用来读连接码与端口）")
+    ap.add_argument("--config", required=True, help="agent-recall-kit.json（用来读连接码与端口）")
     ap.add_argument("--service", default="http://127.0.0.1:18791")
     args = ap.parse_args()
 

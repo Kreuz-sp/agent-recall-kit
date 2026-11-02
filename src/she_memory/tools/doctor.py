@@ -18,7 +18,7 @@ def check(name, ok, detail=""):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="she-memory-doctor")
+    parser = argparse.ArgumentParser(prog="agent-recall-kit-doctor")
     parser.add_argument("--config", required=True)
     args = parser.parse_args(argv)
 

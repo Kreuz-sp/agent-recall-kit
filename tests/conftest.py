@@ -101,7 +101,7 @@ def make_config(tmp_path, library):
     data = tmp_path / "data"
     profile = tmp_path / "profile.json"
     profile.write_text(json.dumps(PROFILE, ensure_ascii=False), encoding="utf-8")
-    config = tmp_path / "she-memory.json"
+    config = tmp_path / "agent-recall-kit.json"
     config.write_text(json.dumps({
         "mode": "source-readonly",
         "memory_root": str(library),

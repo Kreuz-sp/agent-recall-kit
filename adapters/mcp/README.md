@@ -1,6 +1,6 @@
 # MCP 接入（通用）
 
-本包提供的桥：`she-memory-mcp`（stdio，一行一条 JSON-RPC 2.0，不用 Content-Length 分帧）。
+本包提供的桥：`agent-recall-kit-mcp`（stdio，一行一条 JSON-RPC 2.0，不用 Content-Length 分帧）。
 
 它只做请求转换：宿主问什么，就转发给本机服务，再把 `status` / `citation` 原样返回；
 **不维护图、不改排序、不额外补正文**。`ambiguous` / `insufficient` / `source_changed` 会原样透出。
@@ -8,7 +8,7 @@
 ## 起服务
 
 ```powershell
-she-memory --config .\my-data\she-memory.json serve --port 18791
+agent-recall-kit --config .\my-data\agent-recall-kit.json serve --port 18791
 ```
 
 ## 配置宿主
@@ -16,8 +16,8 @@ she-memory --config .\my-data\she-memory.json serve --port 18791
 各宿主的配置格式不同，核心只有三项：
 
 ```
-command: she-memory-mcp
-args:    ["--config", "D:\\my-data\\she-memory.json", "--service", "http://127.0.0.1:18791"]
+command: agent-recall-kit-mcp
+args:    ["--config", "D:\\my-data\\agent-recall-kit.json", "--service", "http://127.0.0.1:18791"]
 ```
 
 示例（Claude Desktop 风格）：
@@ -25,9 +25,9 @@ args:    ["--config", "D:\\my-data\\she-memory.json", "--service", "http://127.0
 ```json
 {
   "mcpServers": {
-    "she-memory": {
-      "command": "she-memory-mcp",
-      "args": ["--config", "D:/my-data/she-memory.json", "--service", "http://127.0.0.1:18791"]
+    "agent-recall-kit": {
+      "command": "agent-recall-kit-mcp",
+      "args": ["--config", "D:/my-data/agent-recall-kit.json", "--service", "http://127.0.0.1:18791"]
     }
   }
 }

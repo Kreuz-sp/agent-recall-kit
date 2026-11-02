@@ -7,7 +7,7 @@
   · manifest.json：每个条目的 sha256，用于 restore 前逐项校验
 
 命令：
-  create  --config X [--out DIR]      生成 <out>/she-memory-backup-<时间戳>.zip
+  create  --config X [--out DIR]      生成 <out>/agent-recall-kit-backup-<时间戳>.zip
   verify  --archive Z                 逐项校验 sha256
   restore --archive Z --to DIR        解到隔离目录（不覆盖正在运行的实例）
 
@@ -57,7 +57,7 @@ def cmd_create(cfg, out_dir):
     out = Path(out_dir).resolve() if out_dir else Path.cwd() / "backups"
     out.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
-    archive = out / f"she-memory-backup-{stamp}.zip"
+    archive = out / f"agent-recall-kit-backup-{stamp}.zip"
     entries = collect(cfg)
     manifest = {"created": time.strftime("%Y-%m-%dT%H:%M:%S"), "config": cfg["config_path"],
                 "state_root": cfg["state_root"], "items": []}
@@ -109,7 +109,7 @@ def cmd_restore(archive, target):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="she-memory-backup")
+    parser = argparse.ArgumentParser(prog="agent-recall-kit-backup")
     sub = parser.add_subparsers(dest="command", required=True)
     base = argparse.ArgumentParser(add_help=False)
     base.add_argument("--config", default=argparse.SUPPRESS)

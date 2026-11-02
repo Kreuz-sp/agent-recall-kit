@@ -1,9 +1,9 @@
-# 可选：Windows 计划任务，每 N 分钟跑一次 `she-memory-ctl ensure`。
+# 可选：Windows 计划任务，每 N 分钟跑一次 `agent-recall-kit-ctl ensure`。
 #
 # 安装 Python 包**不会**自动注册这个任务；必须显式执行本脚本。撤销也不会停掉正在跑的服务。
 #
 #   powershell -NoProfile -ExecutionPolicy Bypass -File guard_task.ps1 `
-#       -Action Install -ConfigPath D:\my-data\she-memory.json -EveryMinutes 10
+#       -Action Install -ConfigPath D:\my-data\agent-recall-kit.json -EveryMinutes 10
 #   powershell -NoProfile -ExecutionPolicy Bypass -File guard_task.ps1 -Action Show
 #   powershell -NoProfile -ExecutionPolicy Bypass -File guard_task.ps1 -Action Remove
 #
@@ -19,7 +19,7 @@ param(
 )
 
 if ($Action -ne 'Remove' -and -not $Ctl) {
-    $found = Get-Command she-memory-ctl -ErrorAction SilentlyContinue
+    $found = Get-Command agent-recall-kit-ctl -ErrorAction SilentlyContinue
     if ($found) { $Ctl = $found.Source } else { $Ctl = 'python' }
 }
 
@@ -42,7 +42,7 @@ switch ($Action) {
         foreach ($a in $t.Actions) { Write-Output ("动作    : {0} {1}" -f $a.Execute, $a.Arguments) }
     }
     'Install' {
-        if (-not $ConfigPath) { throw '需要 -ConfigPath <she-memory.json>' }
+        if (-not $ConfigPath) { throw '需要 -ConfigPath <agent-recall-kit.json>' }
         if ($Ctl -eq 'python') {
             $action = New-ScheduledTaskAction -Execute 'python' `
                 -Argument ('-X utf8 -m she_memory.tools.memctl ensure --config "{0}"' -f $ConfigPath)
